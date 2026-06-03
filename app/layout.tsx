@@ -62,10 +62,13 @@ export const metadata: Metadata = {
 // JSON-LD LocalBusiness schema
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
+  "@type": ["LocalBusiness", "HomeGoodsStore"],
   "name": "Diseños JK",
-  "description": "Fabricantes de puertas corredizas a medida. Fabricación e instalación en CABA y Gran Buenos Aires.",
-  "image": "/puerta-granero.webp",
+  "description": "Fabricación e instalación de puertas corredizas a medida en San Justo, La Matanza y Gran Buenos Aires. Sin obra. Precio exacto en minutos.",
+  "url": "https://disenosjk.vercel.app",
+  "image": "https://disenosjk.vercel.app/puerta-granero.webp",
+  // TODO: reemplazar con número real cuando el cliente lo confirme
+  // "telephone": "+54-9-11-XXXX-XXXX",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Venezuela y Arieta",
@@ -79,9 +82,10 @@ const jsonLd = {
     "latitude": -34.6748,
     "longitude": -58.5585,
   },
+  "hasMap": "https://maps.google.com/maps?q=Venezuela+y+Arieta+San+Justo+La+Matanza",
   "areaServed": [
-    { "@type": "City", "name": "Ciudad Autónoma de Buenos Aires" },
-    { "@type": "AdministrativeArea", "name": "Gran Buenos Aires" },
+    "San Justo", "La Matanza", "Ciudad Autónoma de Buenos Aires", "Gran Buenos Aires",
+    "Morón", "Lomas de Zamora", "Avellaneda", "Lanús", "Quilmes", "Tigre",
   ],
   "openingHoursSpecification": [
     {
@@ -97,8 +101,11 @@ const jsonLd = {
       "closes": "15:00",
     },
   ],
-  "sameAs": ["https://instagram.com/disenosjk_"],
   "priceRange": "$$",
+  "sameAs": [
+    "https://instagram.com/disenosjk_",
+    "https://www.mercadolibre.com.ar/tienda/disenosjk",
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
