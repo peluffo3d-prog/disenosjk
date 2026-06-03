@@ -56,13 +56,13 @@ export const metadata: Metadata = {
     description: "Fabricamos e instalamos puertas corredizas a medida en CABA y GBA.",
   },
   robots: { index: true, follow: true },
-  alternates: { canonical: "https://disenosjk.com.ar" },
+  alternates: { canonical: "https://disenosjk.vercel.app" },
 }
 
 // JSON-LD LocalBusiness schema
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": ["LocalBusiness", "HomeGoodsStore"],
+  "@type": ["LocalBusiness", "HomeAndConstructionBusiness"],
   "name": "Diseños JK",
   "description": "Fabricación e instalación de puertas corredizas a medida en San Justo, La Matanza y Gran Buenos Aires. Sin obra. Precio exacto en minutos.",
   "url": "https://disenosjk.vercel.app",
@@ -79,8 +79,8 @@ const jsonLd = {
   },
   "geo": {
     "@type": "GeoCoordinates",
-    "latitude": -34.6748,
-    "longitude": -58.5585,
+    "latitude": -34.67480,
+    "longitude": -58.55850,
   },
   "hasMap": "https://maps.google.com/maps?q=Venezuela+y+Arieta+San+Justo+La+Matanza",
   "areaServed": [
