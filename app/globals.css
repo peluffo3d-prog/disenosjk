@@ -74,6 +74,11 @@ body  {
   .testimonios-grid { grid-template-columns: 1fr !important; }
 }
 
+/* ── Ambiente image grid: 4 cols → 2 cols en mobile ── */
+@media (max-width: 640px) {
+  .ambiente-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
 /* ── Dashboard ── */
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }

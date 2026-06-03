@@ -55,11 +55,12 @@ function TipoCard({
   )
 }
 
-const AMBIENTES: { value: Ambiente; label: string }[] = [
-  { value: "baño",       label: "Baño" },
-  { value: "dormitorio", label: "Dormitorio" },
-  { value: "living",     label: "Living / Comedor" },
-  { value: "otro",       label: "Otro" },
+// TODO: reemplazar con fotos reales del cliente cuando las tengamos
+const AMBIENTES: { value: Ambiente; label: string; img: string }[] = [
+  { value: "baño",       label: "Baño",            img: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=200&h=160&fit=crop&q=60" },
+  { value: "dormitorio", label: "Dormitorio",       img: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=200&h=160&fit=crop&q=60" },
+  { value: "living",     label: "Living / Comedor", img: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=160&fit=crop&q=60" },
+  { value: "otro",       label: "Otro",             img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=160&fit=crop&q=60" },
 ]
 const TIPOS: { value: TipoPuerta; label: string; desc: string; n: string }[] = [
   { value: "corredera_simple", label: "Corrediza simple",  desc: "Una hoja que desliza", n: "01" },
@@ -140,16 +141,48 @@ export default function Configurador() {
 
       <div className="flex flex-col gap-12">
 
-        {/* 1. Ambiente */}
+        {/* 1. Ambiente — image cards */}
         <div>
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: "#aaa" }}>
             01 — ¿Para qué ambiente?
           </p>
-          <div className="flex flex-wrap gap-2">
-            {AMBIENTES.map(a => (
-              <Chip key={a.value} label={a.label} active={cfg.ambiente === a.value}
-                onClick={() => setCfg(p => ({ ...p, ambiente: a.value }))} />
-            ))}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }} className="ambiente-grid">
+            {AMBIENTES.map(a => {
+              const active = cfg.ambiente === a.value
+              return (
+                <button
+                  key={a.value}
+                  onClick={() => setCfg(p => ({ ...p, ambiente: a.value }))}
+                  style={{
+                    border: `1px solid ${active ? "#0a0a0a" : "#d4d0c8"}`,
+                    background: "transparent",
+                    cursor: "pointer",
+                    padding: 0,
+                    borderRadius: "3px",
+                    overflow: "hidden",
+                    transform: active ? "scale(1.02)" : "scale(1)",
+                    transition: "transform 0.2s cubic-bezier(0.76,0,0.24,1), border-color 0.2s",
+                    textAlign: "left",
+                  }}
+                >
+                  <div style={{ width: "100%", height: "80px", overflow: "hidden", position: "relative" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={a.img}
+                      alt={a.label}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.4s cubic-bezier(0.76,0,0.24,1)" }}
+                      onMouseEnter={e => ((e.currentTarget as HTMLImageElement).style.transform = "scale(1.06)")}
+                      onMouseLeave={e => ((e.currentTarget as HTMLImageElement).style.transform = "scale(1)")}
+                    />
+                  </div>
+                  <div style={{ padding: "8px 10px", background: active ? "#0a0a0a" : "#faf9f7" }}>
+                    <p style={{ fontSize: "12px", fontWeight: 500, color: active ? "#f5f4f0" : "#0a0a0a", fontFamily: "var(--font-sans)" }}>
+                      {a.label}
+                    </p>
+                  </div>
+                </button>
+              )
+            })}
           </div>
         </div>
 
