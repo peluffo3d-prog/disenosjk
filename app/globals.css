@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-display: "DM Serif Display", Georgia, serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
   --font-sans:    "DM Sans", system-ui, sans-serif;
   --font-mono:    "IBM Plex Mono", "Courier New", monospace;
 }
@@ -16,80 +16,64 @@ body  {
   overflow-x: hidden;
 }
 
-/* ── Utilidades ── */
-.font-display { font-family: var(--font-display); }
-.font-mono    { font-family: var(--font-mono); }
+.object-cover  { object-fit: cover; }
+.object-center { object-position: center; }
 
-/* ── Responsive: grids que colapsan ── */
+/* ── Nav links ocultos en mobile ── */
+@media (max-width: 768px) {
+  .nav-links { display: none !important; }
+}
 
-/* Hero: 2 cols → 1 col, foto primero */
+/* ── Hero: 2 cols → apilado ── */
 @media (max-width: 768px) {
   .hero-grid {
     grid-template-columns: 1fr !important;
     min-height: auto !important;
   }
-  .hero-grid > div:last-child {
-    order: -1;
+  .hero-img {
+    height: 56vw !important;
     min-height: 260px;
+    order: -1;
   }
 }
 
-/* Nav links: ocultos en mobile */
+/* ── Why: 4 cols → 2 cols ── */
 @media (max-width: 768px) {
-  .nav-link { display: none !important; }
-}
-
-/* Por qué nosotros: 4 cols → 2 cols */
-@media (max-width: 768px) {
-  .why-grid {
-    grid-template-columns: 1fr 1fr !important;
-  }
+  .why-grid { grid-template-columns: 1fr 1fr !important; }
   .why-item {
-    border-bottom: 1px solid #1f1f1f;
+    border-bottom: 1px solid #1a1a1a;
   }
-  .why-item:nth-child(odd)  { border-right: 1px solid #1f1f1f !important; }
-  .why-item:nth-child(even) { border-right: none !important; }
-  .why-item:nth-last-child(-n+2) { border-bottom: none; }
+  /* Par derecho sin border-right */
+  .why-item:nth-child(even)  { border-right: none !important; }
+  .why-item:nth-child(odd)   { border-right: 1px solid #1a1a1a !important; }
+  /* Última fila sin border-bottom */
+  .why-item:nth-last-child(-n+2) { border-bottom: none !important; }
 }
 
-/* Galería: 2 cols → 1 col */
+/* ── Gallery: 2 cols → 1 col ── */
 @media (max-width: 640px) {
   .gallery-grid {
     grid-template-columns: 1fr !important;
     grid-template-rows: auto !important;
   }
-  .gallery-grid > div:first-child {
-    grid-row: auto !important;
-    aspect-ratio: 16/10;
-  }
+  .gallery-grid > * { grid-row: auto !important; }
 }
 
-/* Steps: 3 cols → 1 col */
+/* ── Steps: 3 cols → 1 col ── */
 @media (max-width: 768px) {
-  .steps-grid {
-    grid-template-columns: 1fr !important;
-  }
-  .step-item {
+  .steps-grid { grid-template-columns: 1fr !important; }
+  .step-item  {
     border-right: none !important;
-    border-bottom: 1px solid #1f1f1f;
+    border-bottom: 1px solid #1a1a1a;
   }
   .step-item:last-child { border-bottom: none; }
 }
 
-/* Testimonios: 3 cols → 1 col */
+/* ── Testimonios: 3 cols → 1 col ── */
 @media (max-width: 768px) {
-  .testimonios-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .testimonios-grid { grid-template-columns: 1fr !important; }
 }
 
-/* Image object-fit helpers */
-.object-cover  { object-fit: cover; }
-.object-right  { object-position: right; }
-.object-center { object-position: center; }
-
-/* Animación del hero */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* ── Dashboard ── */
+.font-display { font-family: var(--font-display); }
+.font-mono    { font-family: var(--font-mono); }
