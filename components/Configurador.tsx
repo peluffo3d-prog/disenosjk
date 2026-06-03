@@ -29,7 +29,7 @@ function StepHead({ n, label }: { n: string; label: string }) {
       <p style={{
         fontFamily: "var(--font-mono)",
         fontSize: "10px", letterSpacing: "0.18em",
-        textTransform: "uppercase", color: "#aaa",
+        textTransform: "uppercase", color: "#666",
       }}>{label}</p>
     </div>
   )
@@ -40,7 +40,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement> & { label: str
   const { label, style, ...rest } = props
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      <label style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#aaa" }}>
+      <label style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#666" }}>
         {label}
       </label>
       <input
@@ -134,7 +134,7 @@ export default function Configurador() {
 
       {/* Heading de sección */}
       <div style={{ maxWidth: "800px", marginBottom: "clamp(48px, 6vh, 72px)" }}>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#aaa", marginBottom: "16px" }}>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>
           Configurador
         </p>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.5rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.05 }}>
@@ -201,7 +201,7 @@ export default function Configurador() {
                     color: active ? "#0a0a0a" : "#444",
                     lineHeight: 1,
                   }}>{t.label}</p>
-                  <p style={{ fontSize: "11px", color: "#aaa", marginTop: "5px", fontFamily: "var(--font-mono)", letterSpacing: "0.05em" }}>{t.desc}</p>
+                  <p style={{ fontSize: "11px", color: "#666", marginTop: "5px", fontFamily: "var(--font-mono)", letterSpacing: "0.05em" }}>{t.desc}</p>
                 </div>
                 <span style={{
                   fontFamily: "var(--font-mono)", fontSize: "11px",
@@ -248,7 +248,7 @@ export default function Configurador() {
           <Input label="Ancho" type="number" placeholder="ej: 80"
             value={cfg.ancho ?? ""}
             onChange={e => setCfg(p => ({ ...p, ancho: Number(e.target.value) || null }))} />
-          <span style={{ paddingBottom: "12px", color: "#aaa", fontSize: "18px" }}>×</span>
+          <span style={{ paddingBottom: "12px", color: "#666", fontSize: "18px" }}>×</span>
           <Input label="Alto" type="number" placeholder="ej: 200"
             value={cfg.alto ?? ""}
             onChange={e => setCfg(p => ({ ...p, alto: Number(e.target.value) || null }))} />
@@ -264,7 +264,7 @@ export default function Configurador() {
             style={{ marginTop: "3px", width: "16px", height: "16px", accentColor: "#0a0a0a", cursor: "pointer" }} />
           <div>
             <p style={{ fontSize: "15px", fontWeight: 400, color: "#0a0a0a" }}>Sí, quiero que lo instalen</p>
-            <p style={{ fontSize: "12px", color: "#aaa", marginTop: "4px", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
+            <p style={{ fontSize: "12px", color: "#666", marginTop: "4px", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
               Disponible en CABA y GBA · Se cobra aparte
             </p>
           </div>
@@ -299,7 +299,7 @@ export default function Configurador() {
                       cfg.instalacion ? { label: `Instalación${cfg.localidad ? ` en ${cfg.localidad}` : ""}`, value: precio.instalacion ? fmtARS(precio.instalacion) : "Coordinar" } : null,
                     ].filter(Boolean).map(row => (
                       <div key={row!.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "16px", borderBottom: "1px solid rgba(0,0,0,0.06)", marginBottom: "16px" }}>
-                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#aaa" }}>{row!.label}</p>
+                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#666" }}>{row!.label}</p>
                         <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 300, letterSpacing: "-0.01em" }}>{row!.value}</p>
                       </div>
                     ))}
@@ -334,7 +334,7 @@ export default function Configurador() {
                   </button>
 
                   {/* CTA login — momento clave para registrarse */}
-                  <p style={{ textAlign: "center", marginTop: "20px", fontSize: "12px", color: "#aaa", fontFamily: "var(--font-mono)", letterSpacing: "0.05em" }}>
+                  <p style={{ textAlign: "center", marginTop: "20px", fontSize: "12px", color: "#666", fontFamily: "var(--font-mono)", letterSpacing: "0.05em" }}>
                     ¿Querés guardar esta cotización?{" "}
                     <a href="/login" style={{ color: "#0a0a0a", textDecoration: "underline", textUnderlineOffset: "3px" }}>
                       Creá tu cuenta →
@@ -343,7 +343,7 @@ export default function Configurador() {
                 </>
               ) : (
                 <div>
-                  <p style={{ fontSize: "15px", color: "#555", marginBottom: "28px", lineHeight: 1.65 }}>
+                  <p style={{ fontSize: "15px", color: "#333", marginBottom: "28px", lineHeight: 1.65 }}>
                     {precio.mensaje ?? "Esta configuración necesita una cotización personalizada."}
                   </p>
                   <a href={waMsg()} target="_blank" rel="noopener noreferrer"

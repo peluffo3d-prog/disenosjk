@@ -26,7 +26,7 @@ function DarkBg({ src, opacity = 0.35 }: { src: string; opacity?: number }) {
 
 // ─── Divisor para secciones oscuras ──────────────────────────────────────────
 function DarkRule({ my = 56 }: { my?: number }) {
-  return <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.12)", margin: `${my}px 0` }} />
+  return <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.22)", margin: `${my}px 0` }} />
 }
 
 // ─── Label de galería ─────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ export default function Home() {
           ))}
           <a href="/login" style={{
             fontSize: "12px", fontWeight: 400, letterSpacing: "0.06em",
-            color: "#aaa", textDecoration: "none",
+            color: "#666", textDecoration: "none",
             borderBottom: "1px solid #ddd", paddingBottom: "1px",
             transition: "color 0.15s, border-color 0.15s",
           }}
@@ -114,7 +114,7 @@ export default function Home() {
           <section ref={heroRef} className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "calc(100vh - 60px)" }}>
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(48px, 8vh, 88px) clamp(24px, 5vw, 64px)" }}>
               <Curtain delay={0.1}>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#aaa", marginBottom: "24px" }}>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "24px" }}>
                   Fabricantes directos · CABA y GBA
                 </p>
               </Curtain>
@@ -125,7 +125,7 @@ export default function Home() {
               >{"Puertas\ncorredizas\na tu medida."}</SplitLines>
 
               <Curtain delay={0.5}>
-                <p style={{ fontSize: "15px", lineHeight: 1.75, color: "#777", maxWidth: "340px", marginBottom: "40px" }}>
+                <p style={{ fontSize: "15px", lineHeight: 1.75, color: "#555", maxWidth: "340px", marginBottom: "40px" }}>
                   Fabricamos e instalamos en tu casa, sin obra.<br />Elegís el modelo, cotizás en minutos.
                 </p>
               </Curtain>
@@ -150,7 +150,7 @@ export default function Home() {
                   {[{ n: "+500", l: "Puertas instaladas" }, { n: "41K", l: "Seguidores en IG" }, { n: "6", l: "Cuotas sin interés" }].map(({ n, l }) => (
                     <div key={l}>
                       <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 300, lineHeight: 1, color: "#0a0a0a" }}>{n}</p>
-                      <p style={{ fontSize: "11px", color: "#aaa", marginTop: "5px", letterSpacing: "0.02em" }}>{l}</p>
+                      <p style={{ fontSize: "11px", color: "#666", marginTop: "5px", letterSpacing: "0.02em" }}>{l}</p>
                     </div>
                   ))}
                 </div>
@@ -170,7 +170,7 @@ export default function Home() {
             <DarkBg src="/puerta-granero.webp" opacity={0.3} />
             <div style={{ position: "relative", zIndex: 1 }}>
               <Curtain>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "16px" }}>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.72)", marginBottom: "16px" }}>
                   Por qué elegirnos
                 </p>
               </Curtain>
@@ -192,9 +192,9 @@ export default function Home() {
                     <div className="why-item" style={{ padding: "32px 24px", height: "100%", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.1)" : "none", transition: "background 0.3s", cursor: "default" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                      <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.28)", marginBottom: "18px" }}>{item.n}</p>
+                      <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.52)", marginBottom: "18px" }}>{item.n}</p>
                       <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "10px", lineHeight: 1.3 }}>{item.title}</p>
-                      <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>{item.desc}</p>
+                      <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.72)", lineHeight: 1.7 }}>{item.desc}</p>
                     </div>
                   </Curtain>
                 ))}
@@ -205,7 +205,7 @@ export default function Home() {
           {/* ── GALERÍA ── */}
           <section id="galeria" style={{ background: "#f5f4f0", padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)" }}>
             <Curtain>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#aaa", marginBottom: "16px" }}>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>
                 Nuestros modelos
               </p>
             </Curtain>
@@ -240,7 +240,7 @@ export default function Home() {
             <DarkBg src="/puerta-blanca.webp" opacity={0.25} />
             <div style={{ position: "relative", zIndex: 1 }}>
               <Curtain>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "16px" }}>Sin vueltas</p>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.65)", marginBottom: "16px" }}>Sin vueltas</p>
               </Curtain>
               <SplitLines
                 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.5rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.05, marginBottom: "0" }}
@@ -249,17 +249,17 @@ export default function Home() {
 
               <DarkRule my={56} />
 
-              <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
+              <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderTop: "1px solid rgba(255,255,255,0.22)" }}>
                 {[
                   { n: "1", title: "Armás tu puerta",  desc: "Completás el configurador con ambiente, modelo y medidas. El precio aparece al instante." },
                   { n: "2", title: "Pagás en cuotas",   desc: "Pagás con Mercado Pago en hasta 6 cuotas. Confirmamos y programamos la entrega." },
                   { n: "3", title: "Lo instalamos",     desc: "Vamos a tu domicilio en CABA o GBA. Sin obra, sin drama, sin vueltas." },
                 ].map((s, i) => (
                   <Curtain key={s.n} delay={i * 0.1} className="step-item"
-                    style={{ padding: "clamp(28px, 4vw, 48px) clamp(16px, 3vw, 36px)", borderRight: i < 2 ? "1px solid rgba(255,255,255,0.12)" : "none" }}>
+                    style={{ padding: "clamp(28px, 4vw, 48px) clamp(16px, 3vw, 36px)", borderRight: i < 2 ? "1px solid rgba(255,255,255,0.22)" : "none" }}>
                     <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3.5rem, 7vw, 6rem)", fontWeight: 200, lineHeight: 1, color: "rgba(255,255,255,0.2)", marginBottom: "20px" }}>{s.n}</p>
                     <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "10px" }}>{s.title}</p>
-                    <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", lineHeight: 1.75 }}>{s.desc}</p>
+                    <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.72)", lineHeight: 1.75 }}>{s.desc}</p>
                   </Curtain>
                 ))}
               </div>
@@ -269,7 +269,7 @@ export default function Home() {
           {/* ── DÓNDE ESTAMOS ── */}
           <section style={{ background: "#f5f4f0", padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)" }}>
             <Curtain>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#aaa", marginBottom: "16px" }}>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>
                 Dónde estamos
               </p>
             </Curtain>
@@ -283,19 +283,19 @@ export default function Home() {
               <Curtain>
                 <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
                   <div>
-                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#aaa", marginBottom: "8px" }}>Dirección</p>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>Dirección</p>
                     <p style={{ fontFamily: "var(--font-display)", fontSize: "1.3rem", fontWeight: 300, letterSpacing: "-0.01em", lineHeight: 1.3 }}>
                       Venezuela y Arieta<br />San Justo, La Matanza<br />Buenos Aires Oeste
                     </p>
                   </div>
                   <div>
-                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#aaa", marginBottom: "8px" }}>Horario</p>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>Horario</p>
                     <p style={{ fontSize: "14px", fontWeight: 300, color: "#444", lineHeight: 1.6 }}>
                       Lun–Vie · 9 a 19 hs<br />Sáb · 9 a 15 hs
                     </p>
                   </div>
                   <div>
-                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#aaa", marginBottom: "8px" }}>Zona de entrega</p>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>Zona de entrega</p>
                     <p style={{ fontSize: "14px", fontWeight: 300, color: "#444", lineHeight: 1.6 }}>
                       CABA y Gran Buenos Aires
                     </p>
@@ -320,7 +320,7 @@ export default function Home() {
           {/* ── TESTIMONIOS ── */}
           <section style={{ background: "#f5f4f0", padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)" }}>
             <Curtain>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#aaa", marginBottom: "16px" }}>Clientes</p>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>Clientes</p>
             </Curtain>
             {/* Heading grande — impacto máximo */}
             <SplitLines
@@ -338,7 +338,7 @@ export default function Home() {
                   <div style={{ padding: "28px 24px", background: "#ece9e3", borderRadius: "3px", height: "100%" }}>
                     <p style={{ fontSize: "18px", lineHeight: 1.6, color: "#555", marginBottom: "24px", fontFamily: "var(--font-display)", fontWeight: 300, fontStyle: "italic", letterSpacing: "-0.01em" }}>{t.texto}</p>
                     <p style={{ fontSize: "12px", fontWeight: 500, color: "#0a0a0a", letterSpacing: "0.02em" }}>{t.nombre}</p>
-                    <p style={{ fontSize: "11px", color: "#aaa", marginTop: "3px" }}>{t.lugar}</p>
+                    <p style={{ fontSize: "11px", color: "#666", marginTop: "3px" }}>{t.lugar}</p>
                   </div>
                 </Curtain>
               ))}
@@ -361,7 +361,7 @@ export default function Home() {
 
             <div style={{ position: "relative", zIndex: 1 }}>
               <Curtain>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "20px" }}>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.65)", marginBottom: "20px" }}>
                   Empezá hoy
                 </p>
               </Curtain>
