@@ -2,21 +2,94 @@
 
 @theme inline {
   --font-display: "DM Serif Display", Georgia, serif;
-  --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+  --font-sans:    "DM Sans", system-ui, sans-serif;
+  --font-mono:    "IBM Plex Mono", "Courier New", monospace;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
+html  { scroll-behavior: smooth; }
+body  {
   font-family: var(--font-sans);
-  background: #fff;
+  background: #f5f4f0;
   color: #0a0a0a;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* Dashboard — tipografía brutal */
+/* ── Utilidades ── */
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }
+
+/* ── Responsive: grids que colapsan ── */
+
+/* Hero: 2 cols → 1 col, foto primero */
+@media (max-width: 768px) {
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+  }
+  .hero-grid > div:last-child {
+    order: -1;
+    min-height: 260px;
+  }
+}
+
+/* Nav links: ocultos en mobile */
+@media (max-width: 768px) {
+  .nav-link { display: none !important; }
+}
+
+/* Por qué nosotros: 4 cols → 2 cols */
+@media (max-width: 768px) {
+  .why-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .why-item {
+    border-bottom: 1px solid #1f1f1f;
+  }
+  .why-item:nth-child(odd)  { border-right: 1px solid #1f1f1f !important; }
+  .why-item:nth-child(even) { border-right: none !important; }
+  .why-item:nth-last-child(-n+2) { border-bottom: none; }
+}
+
+/* Galería: 2 cols → 1 col */
+@media (max-width: 640px) {
+  .gallery-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+  .gallery-grid > div:first-child {
+    grid-row: auto !important;
+    aspect-ratio: 16/10;
+  }
+}
+
+/* Steps: 3 cols → 1 col */
+@media (max-width: 768px) {
+  .steps-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .step-item {
+    border-right: none !important;
+    border-bottom: 1px solid #1f1f1f;
+  }
+  .step-item:last-child { border-bottom: none; }
+}
+
+/* Testimonios: 3 cols → 1 col */
+@media (max-width: 768px) {
+  .testimonios-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Image object-fit helpers */
+.object-cover  { object-fit: cover; }
+.object-right  { object-position: right; }
+.object-center { object-position: center; }
+
+/* Animación del hero */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
