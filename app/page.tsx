@@ -84,7 +84,7 @@ export default function Home() {
         <span style={{ fontFamily: "var(--font-display)", fontSize: "21px", fontWeight: 300, letterSpacing: "0.03em" }}>
           Diseños JK
         </span>
-        <div className="nav-links" style={{ display: "flex", gap: "32px" }}>
+        <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
           {[["Catálogo", "#galeria"], ["Cómo funciona", "#como-funciona"], ["Cotizá", "#configurador"]].map(([l, h]) => (
             <a key={l} href={h} style={{
               fontSize: "13px", fontWeight: 300, letterSpacing: "0.04em",
@@ -93,6 +93,16 @@ export default function Home() {
             onMouseEnter={e => (e.currentTarget.style.color = "#0a0a0a")}
             onMouseLeave={e => (e.currentTarget.style.color = "#666")}>{l}</a>
           ))}
+          <a href="/login" style={{
+            fontSize: "12px", fontWeight: 400, letterSpacing: "0.06em",
+            color: "#aaa", textDecoration: "none",
+            borderBottom: "1px solid #ddd", paddingBottom: "1px",
+            transition: "color 0.15s, border-color 0.15s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = "#0a0a0a"; e.currentTarget.style.borderColor = "#0a0a0a" }}
+          onMouseLeave={e => { e.currentTarget.style.color = "#aaa"; e.currentTarget.style.borderColor = "#ddd" }}>
+            Ingresar
+          </a>
         </div>
       </nav>
 
@@ -253,6 +263,57 @@ export default function Home() {
                   </Curtain>
                 ))}
               </div>
+            </div>
+          </section>
+
+          {/* ── DÓNDE ESTAMOS ── */}
+          <section style={{ background: "#f5f4f0", padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)" }}>
+            <Curtain>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#aaa", marginBottom: "16px" }}>
+                Dónde estamos
+              </p>
+            </Curtain>
+            <SplitLines
+              style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.5rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.05, marginBottom: "48px" }}
+              baseDelay={0.05}
+            >{"Fabricamos en\nSan Justo."}</SplitLines>
+
+            <div className="map-grid" style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "48px", alignItems: "start" }}>
+              {/* Info */}
+              <Curtain>
+                <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                  <div>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#aaa", marginBottom: "8px" }}>Dirección</p>
+                    <p style={{ fontFamily: "var(--font-display)", fontSize: "1.3rem", fontWeight: 300, letterSpacing: "-0.01em", lineHeight: 1.3 }}>
+                      Venezuela y Arieta<br />San Justo, La Matanza<br />Buenos Aires Oeste
+                    </p>
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#aaa", marginBottom: "8px" }}>Horario</p>
+                    <p style={{ fontSize: "14px", fontWeight: 300, color: "#444", lineHeight: 1.6 }}>
+                      Lun–Vie · 9 a 19 hs<br />Sáb · 9 a 15 hs
+                    </p>
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#aaa", marginBottom: "8px" }}>Zona de entrega</p>
+                    <p style={{ fontSize: "14px", fontWeight: 300, color: "#444", lineHeight: 1.6 }}>
+                      CABA y Gran Buenos Aires
+                    </p>
+                  </div>
+                </div>
+              </Curtain>
+
+              {/* Mapa */}
+              <Curtain>
+                <div style={{ borderRadius: "3px", overflow: "hidden", height: "320px", border: "1px solid rgba(0,0,0,0.08)" }}>
+                  <iframe
+                    src="https://maps.google.com/maps?q=Venezuela+y+Arieta+San+Justo+La+Matanza+Buenos+Aires&output=embed&hl=es&z=15"
+                    style={{ width: "100%", height: "100%", border: "none" }}
+                    loading="lazy"
+                    title="Ubicación Diseños JK — San Justo, La Matanza"
+                  />
+                </div>
+              </Curtain>
             </div>
           </section>
 

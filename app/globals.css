@@ -79,6 +79,16 @@ body  {
   .ambiente-grid { grid-template-columns: 1fr 1fr !important; }
 }
 
+/* ── Mapa: 2 cols → 1 col en mobile ── */
+@media (max-width: 768px) {
+  .map-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Contact row en configurador: 2 cols → 1 en mobile ── */
+@media (max-width: 640px) {
+  .contact-row { grid-template-columns: 1fr !important; }
+}
+
 /* ── Dashboard ── */
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }
