@@ -7,6 +7,7 @@ import SmoothScroll from "@/components/SmoothScroll"
 import Curtain from "@/components/Curtain"
 import SplitLines from "@/components/SplitLines"
 import ScaleImage from "@/components/ScaleImage"
+import SectionReveal from "@/components/SectionReveal"
 
 const DoorIntro = dynamic(() => import("@/components/DoorIntro"), { ssr: false })
 

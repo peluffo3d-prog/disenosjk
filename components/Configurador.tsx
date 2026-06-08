@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import type { ConfiguradorState, Ambiente, TipoPuerta, Material } from "@/types"
 import { calcularPrecio, fmtARS } from "@/lib/precios"
@@ -109,6 +109,14 @@ export default function Configurador() {
   const [email, setEmail]     = useState("")
   const [tel, setTel]         = useState("")
   const [loading, setLoading] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 900)
+    check()
+    window.addEventListener("resize", check, { passive: true })
+    return () => window.removeEventListener("resize", check)
+  }, [])
 
   const precio   = calcularPrecio(cfg)
   const completo = !!(cfg.ambiente && cfg.tipo && cfg.material && cfg.ancho && cfg.alto)
@@ -150,7 +158,36 @@ export default function Configurador() {
   ]
 
   return (
-    <section style={{ padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)", background: "#f5f4f0" }}>
+    <section style={{ padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)", background: "#f5f4f0", paddingBottom: isMobile && completo ? "140px" : undefined }}>
+
+      {/* Barra de precio fija en mobile */}
+      <AnimatePresence>
+        {isMobile && completo && precio.estandar && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.76, 0, 0.24, 1] }}
+            style={{
+              position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 90,
+              background: "#0a0a0a", padding: "16px 24px 24px",
+              borderTop: "1px solid rgba(255,255,255,0.1)",
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px",
+            }}>
+            <div>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>Total</p>
+              <p style={{ fontFamily: "var(--font-display)", fontSize: "1.8rem", fontWeight: 200, letterSpacing: "-0.02em", color: "#f5f4f0", lineHeight: 1.1 }}>
+                {fmtARS(precio.total!)}
+              </p>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", color: "rgba(255,255,255,0.35)", marginTop: "2px" }}>6 cuotas sin interés</p>
+            </div>
+            <a href="#configurador-pago"
+              style={{ padding: "14px 20px", background: "#f5f4f0", color: "#0a0a0a", fontSize: "13px", fontWeight: 500, letterSpacing: "0.03em", textDecoration: "none", borderRadius: "3px", whiteSpace: "nowrap" }}>
+              Continuar →
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Heading */}
       <div style={{ maxWidth: "1100px", margin: "0 auto", marginBottom: "clamp(40px, 6vh, 64px)" }}>
@@ -276,26 +313,40 @@ export default function Configurador() {
             )}
           </AnimatePresence>
 
-          {/* 06 Datos — aparece al completar */}
+          {/* 06 Datos + pago — aparece al completar */}
           <AnimatePresence>
             {completo && precio.estandar && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.35 }} style={{ overflow: "hidden" }}>
+              <motion.div id="configurador-pago" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.35 }} style={{ overflow: "hidden" }}>
                 <hr style={{ border: "none", borderTop: "1px solid rgba(0,0,0,0.08)", margin: "36px 0" }} />
                 <StepHead n="06" label="Tus datos" done={!!nombre && !!email} />
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
                   <Input label="Nombre y apellido" type="text" placeholder="Juan Pérez" value={nombre} onChange={e => setNombre(e.target.value)} />
                   <div className="contact-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                     <Input label="Email" type="email" placeholder="correo@mail.com" value={email} onChange={e => setEmail(e.target.value)} />
                     <Input label="WhatsApp" type="tel" placeholder="11 2345 6789" value={tel} onChange={e => setTel(e.target.value)} />
                   </div>
                 </div>
+                {/* Precio + botón pago inline en mobile */}
+                {isMobile && (
+                  <div style={{ background: "#0a0a0a", borderRadius: "6px", padding: "24px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "4px" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)" }}>Total</span>
+                      <span style={{ fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 200, letterSpacing: "-0.02em", color: "#f5f4f0" }}>{fmtARS(precio.total!)}</span>
+                    </div>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "rgba(255,255,255,0.4)", marginBottom: "20px" }}>Hasta 6 cuotas sin interés</p>
+                    <button onClick={handlePagar} disabled={!listoPagar || loading}
+                      style={{ width: "100%", padding: "16px", background: "#f5f4f0", color: "#0a0a0a", border: "none", fontSize: "14px", fontWeight: 600, borderRadius: "4px", cursor: listoPagar ? "pointer" : "not-allowed", opacity: listoPagar ? 1 : 0.4 }}>
+                      {loading ? "Procesando…" : listoPagar ? "Pagar con Mercado Pago" : "Completá tus datos ↑"}
+                    </button>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* ── Panel resumen sticky (oscuro) ── */}
-        <aside className="config-summary" style={{ position: "sticky", top: "80px", background: "#0a0a0a", borderRadius: "6px", padding: "clamp(24px, 3vw, 36px)", color: "#f5f4f0" }}>
+        {/* ── Panel resumen sticky (oscuro) — solo desktop ── */}
+        <aside className="config-summary" style={{ position: "sticky", top: "80px", background: "#0a0a0a", borderRadius: "6px", padding: "clamp(24px, 3vw, 36px)", color: "#f5f4f0", display: isMobile ? "none" : undefined }}>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "20px" }}>Tu puerta</p>
 
           <DoorPreview cfg={cfg} />

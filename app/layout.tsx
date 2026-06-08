@@ -116,6 +116,32 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Transiciones de sección — activa section-hidden en todas las secciones excepto el hero */}
+        <script dangerouslySetInnerHTML={{ __html: `
+(function(){
+  function init(){
+    var sections = document.querySelectorAll('main > * > section:not(:first-child), main section[id]');
+    sections.forEach(function(s,i){
+      if(s.closest('.hero-grid')) return;
+      s.classList.add('section-hidden');
+      if(i>0) s.style.transitionDelay = '0.05s';
+    });
+    function check(){
+      sections.forEach(function(s){
+        var r = s.getBoundingClientRect();
+        if(r.top < window.innerHeight*0.92 && r.bottom>0){
+          s.classList.remove('section-hidden');
+          s.classList.add('section-visible');
+        }
+      });
+    }
+    check();
+    window.addEventListener('scroll', check, {passive:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
+        `}} />
       </head>
       <body>{children}</body>
     </html>

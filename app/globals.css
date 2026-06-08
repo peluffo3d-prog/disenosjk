@@ -25,24 +25,21 @@ body  {
   .nav-burger { display: flex !important; }
 }
 
-/* ── Hero: 2 cols → apilado (ficha técnica debajo del texto, sin banda muerta) ── */
+/* ── Hero mobile ── */
 @media (max-width: 768px) {
   .hero-grid {
     grid-template-columns: 1fr !important;
-    min-height: auto !important;
-    padding-bottom: clamp(32px, 6vh, 48px);
+    min-height: 100svh !important;   /* ocupa pantalla completa */
+    display: flex !important;
+    flex-direction: column !important;
   }
-  /* Menos padding vertical en mobile — el hero no necesita ser tan largo */
   .hero-copy {
-    padding: clamp(28px, 5vh, 44px) clamp(24px, 5vw, 64px) clamp(8px, 2vh, 16px) !important;
-    justify-content: flex-start !important;
+    flex: 1 !important;
+    padding: clamp(32px, 6vh, 52px) 24px clamp(24px, 4vh, 36px) !important;
+    justify-content: flex-end !important;  /* texto pegado abajo como el laser cut */
   }
-  .hero-img {
-    order: 0 !important;
-    justify-content: flex-start !important;
-    padding: clamp(12px, 3vh, 20px) clamp(24px, 5vw, 64px) 0 !important;
-  }
-  .hero-spec { max-width: 100% !important; }
+  /* Ocultar la ficha técnica en mobile — no hay espacio y el configurador la cubre */
+  .hero-img { display: none !important; }
 }
 
 /* ── Why: 4 cols → 2 cols ── */
@@ -106,20 +103,33 @@ body  {
   animation: heroFade 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ── Transiciones de sección — reveal al entrar al viewport ── */
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section-hidden {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.section-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ── B2B: 2 cols → 1 col en mobile ── */
 @media (max-width: 768px) {
   .b2b-layout { grid-template-columns: 1fr !important; }
 }
 
-/* ── Configurador: pasos + resumen sticky → 1 col, resumen arriba ── */
+/* ── Configurador: pasos full-width en mobile, aside oculto (barra bottom lo reemplaza) ── */
 @media (max-width: 900px) {
   .config-grid    { grid-template-columns: 1fr !important; }
-  .config-summary {
-    position: sticky !important;
-    top: 60px !important;
-    order: -1;                /* resumen arriba en mobile */
-    z-index: 40;
-  }
+  .config-summary { display: none !important; }
+  /* Más espacio para tocar los botones */
+  .ambiente-grid button { min-height: 44px; }
 }
 
 /* ── Dashboard ── */
