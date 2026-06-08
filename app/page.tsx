@@ -13,7 +13,7 @@ const DoorIntro = dynamic(() => import("@/components/DoorIntro"), { ssr: false }
 const WA_URL    = "https://wa.me/5491100000000?text=Hola!%20Vi%20la%20web%20y%20quiero%20consultar"
 const IG_URL    = "https://instagram.com/disenosjk_"
 const EAZE      = "cubic-bezier(0.76, 0, 0.24, 1)"
-const HERO_VID  = "https://videos.pexels.com/video-files/10531277/10531277-hd_1080_1920_24fps.mp4"
+const HERO_VID  = "https://videos.pexels.com/video-files/7622764/7622764-uhd_2560_1440_25fps.mp4"
 
 // ─── Backgrounds para secciones oscuras ──────────────────────────────────────
 function DarkBg({ src, opacity = 0.35 }: { src: string; opacity?: number }) {
@@ -111,72 +111,82 @@ export default function Home() {
       <SmoothScroll>
         <main style={{ fontFamily: "var(--font-sans)", background: "#f5f4f0", paddingTop: "60px" }}>
 
-          {/* ── HERO ── */}
-          <section ref={heroRef} className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "calc(100vh - 60px)" }}>
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(48px, 8vh, 88px) clamp(24px, 5vw, 64px)" }}>
+          {/* ── HERO — dark full-bleed con video de fabricación ── */}
+          <section ref={heroRef} className="hero-grid" style={{
+            display: "grid", gridTemplateColumns: "1fr 1fr",
+            minHeight: "calc(100vh - 60px)",
+            position: "relative",
+            background: "#0a0a0a",
+            overflow: "hidden",
+          }}>
+
+            {/* Video full-bleed — misma técnica laser cut */}
+            <video
+              autoPlay muted loop playsInline
+              style={{
+                position: "absolute",
+                top: "50%", left: "50%",
+                transform: "translate(-50%, -50%)",
+                minWidth: "100%", minHeight: "100%",
+                width: "auto", height: "auto",
+                mixBlendMode: "screen",
+                opacity: 0.28,
+                filter: "brightness(0.85) saturate(0.8) contrast(1.2)",
+                pointerEvents: "none",
+                zIndex: 0,
+              }}
+            >
+              <source src={HERO_VID} type="video/mp4" />
+            </video>
+
+            {/* Contenido izquierdo — z-index sobre el video */}
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(48px, 8vh, 88px) clamp(24px, 5vw, 64px)", position: "relative", zIndex: 1 }}>
               <Curtain delay={0.1}>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "24px" }}>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "24px" }}>
                   Fabricantes directos · CABA y GBA
                 </p>
               </Curtain>
 
               <SplitLines
-                style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3.8rem, 7.5vw, 7.5rem)", fontWeight: 300, lineHeight: 1, letterSpacing: "-0.02em", color: "#0a0a0a", marginBottom: "28px" }}
+                style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3.8rem, 7.5vw, 7.5rem)", fontWeight: 300, lineHeight: 1, letterSpacing: "-0.02em", color: "#f5f4f0", marginBottom: "28px" }}
                 baseDelay={0.15}
               >{"Puertas\ncorredizas\na tu medida."}</SplitLines>
 
               <Curtain delay={0.5}>
-                <p style={{ fontSize: "15px", lineHeight: 1.75, color: "#555", maxWidth: "340px", marginBottom: "40px" }}>
+                <p style={{ fontSize: "15px", lineHeight: 1.75, color: "rgba(255,255,255,0.55)", maxWidth: "340px", marginBottom: "40px" }}>
                   Fabricamos e instalamos en tu casa, sin obra.<br />Elegís el modelo, cotizás en minutos.
                 </p>
               </Curtain>
 
               <Curtain delay={0.65}>
                 <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", alignItems: "center", marginBottom: "clamp(40px, 6vh, 64px)" }}>
-                  <a href="#configurador" style={{ padding: "13px 26px", background: "#0a0a0a", color: "#f5f4f0", fontSize: "14px", fontWeight: 400, letterSpacing: "0.01em", textDecoration: "none", borderRadius: "3px", transition: "opacity 0.2s" }}
-                    onMouseEnter={e => (e.currentTarget.style.opacity = "0.75")}
+                  <a href="#configurador" style={{ padding: "13px 26px", background: "#f5f4f0", color: "#0a0a0a", fontSize: "14px", fontWeight: 400, letterSpacing: "0.01em", textDecoration: "none", borderRadius: "3px", transition: "opacity 0.2s" }}
+                    onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
                     onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
                     Armá tu puerta
                   </a>
-                  <a href="#galeria" style={{ fontSize: "13px", color: "#888", textDecoration: "none", paddingBottom: "2px", borderBottom: "1px solid #ccc", transition: "color 0.15s, border-color 0.15s" }}
-                    onMouseEnter={e => { e.currentTarget.style.color = "#0a0a0a"; e.currentTarget.style.borderColor = "#0a0a0a" }}
-                    onMouseLeave={e => { e.currentTarget.style.color = "#888"; e.currentTarget.style.borderColor = "#ccc" }}>
+                  <a href="#galeria" style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", textDecoration: "none", paddingBottom: "2px", borderBottom: "1px solid rgba(255,255,255,0.25)", transition: "color 0.15s, border-color 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.color = "#f5f4f0"; e.currentTarget.style.borderColor = "#f5f4f0" }}
+                    onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.5)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)" }}>
                     Ver modelos →
                   </a>
                 </div>
               </Curtain>
 
               <Curtain delay={0.75}>
-                <div style={{ display: "flex", gap: "clamp(24px, 4vw, 48px)", paddingTop: "clamp(24px, 4vh, 36px)", borderTop: "1px solid rgba(0,0,0,0.1)", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "clamp(24px, 4vw, 48px)", paddingTop: "clamp(24px, 4vh, 36px)", borderTop: "1px solid rgba(255,255,255,0.1)", flexWrap: "wrap" }}>
                   {[{ n: "+500", l: "Puertas instaladas" }, { n: "41K", l: "Seguidores en IG" }, { n: "6", l: "Cuotas sin interés" }].map(({ n, l }) => (
                     <div key={l}>
-                      <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 300, lineHeight: 1, color: "#0a0a0a" }}>{n}</p>
-                      <p style={{ fontSize: "11px", color: "#666", marginTop: "5px", letterSpacing: "0.02em" }}>{l}</p>
+                      <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 300, lineHeight: 1, color: "#f5f4f0" }}>{n}</p>
+                      <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.45)", marginTop: "5px", letterSpacing: "0.02em" }}>{l}</p>
                     </div>
                   ))}
                 </div>
               </Curtain>
             </div>
 
-            {/* Video looping — dark side, misma técnica laser cut */}
-            <div className="hero-img" style={{ position: "relative", background: "#0a0a0a", overflow: "hidden" }}>
-              <video
-                autoPlay muted loop playsInline
-                style={{
-                  position: "absolute",
-                  top: "50%", left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  minWidth: "100%", minHeight: "100%",
-                  width: "auto", height: "auto",
-                  mixBlendMode: "screen",
-                  opacity: 0.30,
-                  filter: "brightness(0.85) contrast(1.15)",
-                  pointerEvents: "none",
-                }}
-              >
-                <source src={HERO_VID} type="video/mp4" />
-              </video>
-            </div>
+            {/* Lado derecho — oscuro, el video se ve más intenso acá */}
+            <div className="hero-img" style={{ position: "relative", zIndex: 1 }} />
           </section>
 
           {/* ── POR QUÉ NOSOTROS — imagen de fondo ── */}
