@@ -13,7 +13,7 @@ const DoorIntro = dynamic(() => import("@/components/DoorIntro"), { ssr: false }
 const WA_URL    = "https://wa.me/5491100000000?text=Hola!%20Vi%20la%20web%20y%20quiero%20consultar"
 const IG_URL    = "https://instagram.com/disenosjk_"
 const EAZE      = "cubic-bezier(0.76, 0, 0.24, 1)"
-const HERO_VID  = "https://videos.pexels.com/video-files/7622764/7622764-uhd_2560_1440_25fps.mp4"
+const HERO_VID  = "https://videos.pexels.com/video-files/20523638/20523638-hd_1920_1080_25fps.mp4"
 
 // ─── Backgrounds para secciones oscuras ──────────────────────────────────────
 function DarkBg({ src, opacity = 0.35 }: { src: string; opacity?: number }) {
