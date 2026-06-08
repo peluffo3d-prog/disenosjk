@@ -10,9 +10,10 @@ import ScaleImage from "@/components/ScaleImage"
 
 const DoorIntro = dynamic(() => import("@/components/DoorIntro"), { ssr: false })
 
-const WA_URL = "https://wa.me/5491100000000?text=Hola!%20Vi%20la%20web%20y%20quiero%20consultar"
-const IG_URL = "https://instagram.com/disenosjk_"
-const EAZE   = "cubic-bezier(0.76, 0, 0.24, 1)"
+const WA_URL    = "https://wa.me/5491100000000?text=Hola!%20Vi%20la%20web%20y%20quiero%20consultar"
+const IG_URL    = "https://instagram.com/disenosjk_"
+const EAZE      = "cubic-bezier(0.76, 0, 0.24, 1)"
+const HERO_VID  = "https://videos.pexels.com/video-files/10531277/10531277-hd_1080_1920_24fps.mp4"
 
 // ─── Backgrounds para secciones oscuras ──────────────────────────────────────
 function DarkBg({ src, opacity = 0.35 }: { src: string; opacity?: number }) {
@@ -157,11 +158,24 @@ export default function Home() {
               </Curtain>
             </div>
 
-            {/* Foto con parallax */}
-            <div className="hero-img" style={{ position: "relative", background: "#e0dbd4", overflow: "hidden" }}>
-              <div data-parallax="0.5" style={{ position: "absolute", inset: "-8%", height: "116%", width: "100%" }}>
-                <Image src="/puerta-granero.webp" alt="Puerta corrediza en living" fill className="object-cover" style={{ objectPosition: "center" }} priority />
-              </div>
+            {/* Video looping — dark side, misma técnica laser cut */}
+            <div className="hero-img" style={{ position: "relative", background: "#0a0a0a", overflow: "hidden" }}>
+              <video
+                autoPlay muted loop playsInline
+                style={{
+                  position: "absolute",
+                  top: "50%", left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  minWidth: "100%", minHeight: "100%",
+                  width: "auto", height: "auto",
+                  mixBlendMode: "screen",
+                  opacity: 0.30,
+                  filter: "brightness(0.85) contrast(1.15)",
+                  pointerEvents: "none",
+                }}
+              >
+                <source src={HERO_VID} type="video/mp4" />
+              </video>
             </div>
           </section>
 
