@@ -2,9 +2,11 @@
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
 
+const VIDEO_URL = "https://videos.pexels.com/video-files/10531277/10531277-hd_1080_1920_24fps.mp4"
+
 export default function DoorIntro() {
-  const [visible,  setVisible]  = useState(false)
-  const [opening,  setOpening]  = useState(false)
+  const [visible,   setVisible]   = useState(false)
+  const [opening,   setOpening]   = useState(false)
   const initialized = useRef(false)
 
   useEffect(() => {
@@ -15,12 +17,12 @@ export default function DoorIntro() {
     setVisible(true)
     document.body.style.overflow = "hidden"
 
-    const t1 = setTimeout(() => setOpening(true), 900)
+    const t1 = setTimeout(() => setOpening(true), 1000)
     const t2 = setTimeout(() => {
       setVisible(false)
       document.body.style.overflow = ""
       sessionStorage.setItem("jk_intro_seen", "1")
-    }, 2100)
+    }, 2200)
 
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
@@ -45,38 +47,36 @@ export default function DoorIntro() {
               borderRight: "1px solid #1e1e1e",
             }}
           >
-            {/* Mitad izquierda de la puerta — slow zoom */}
-            <motion.div
-              initial={{ scale: 1.08 }}
-              animate={{ scale: opening ? 1.12 : 1.08 }}
-              transition={{ duration: 2.5, ease: "easeIn" }}
+            {/* Video de fondo — misma técnica que laser cut */}
+            <video
+              autoPlay muted loop playsInline
               style={{
-                position: "absolute", inset: 0,
-                backgroundImage: "url(/puerta-granero.webp)",
-                backgroundSize: "200% 100%",
-                backgroundPosition: "left center",
-                opacity: 0.28,
-                filter: "grayscale(0.4) brightness(0.9)",
+                position: "absolute",
+                top: "50%", left: "50%",
+                transform: "translate(-50%, -50%)",
+                minWidth: "200%", minHeight: "100%",
+                width: "auto", height: "auto",
+                mixBlendMode: "screen",
+                opacity: 0.32,
+                filter: "brightness(0.9) contrast(1.1)",
+                pointerEvents: "none",
+                objectPosition: "right center",
               }}
-            />
-
-            {/* Vignette lateral derecha — fade hacia el centro */}
-            <div style={{
-              position: "absolute", inset: 0,
-              background: "linear-gradient(to right, rgba(10,10,10,0.6) 0%, transparent 60%)",
-              pointerEvents: "none",
-            }} />
+            >
+              <source src={VIDEO_URL} type="video/mp4" />
+            </video>
 
             {/* Texto */}
             <div style={{
               position: "absolute", inset: 0,
               display: "flex", alignItems: "center", justifyContent: "flex-end",
               paddingRight: "52px",
+              zIndex: 1,
             }}>
               <motion.div
-                initial={{ opacity: 0, x: 12 }}
-                animate={{ opacity: opening ? 0 : 1, x: opening ? -8 : 0 }}
-                transition={{ duration: 0.4, delay: opening ? 0 : 0.25 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: opening ? 0 : 1 }}
+                transition={{ duration: 0.3, delay: opening ? 0 : 0.3 }}
                 style={{ textAlign: "right" }}
               >
                 <p style={{
@@ -87,7 +87,7 @@ export default function DoorIntro() {
                   letterSpacing: "-0.02em",
                   fontWeight: 300,
                 }}>
-                  Diseños <span style={{ color: "#666" }}>JK</span>
+                  Diseños <span style={{ color: "#555" }}>JK</span>
                 </p>
                 <p style={{
                   fontFamily: "var(--font-mono)",
@@ -102,12 +102,13 @@ export default function DoorIntro() {
               </motion.div>
             </div>
 
-            {/* Handle izquierdo */}
+            {/* Handle */}
             <div style={{
               position: "absolute", right: "16px", top: "50%",
               transform: "translateY(-50%)",
               width: "3px", height: "48px",
               background: "#2a2a2a", borderRadius: "2px",
+              zIndex: 1,
             }} />
           </motion.div>
 
@@ -124,38 +125,35 @@ export default function DoorIntro() {
               borderLeft: "1px solid #1e1e1e",
             }}
           >
-            {/* Mitad derecha de la puerta */}
-            <motion.div
-              initial={{ scale: 1.08 }}
-              animate={{ scale: opening ? 1.12 : 1.08 }}
-              transition={{ duration: 2.5, ease: "easeIn" }}
+            {/* Mismo video, espejado */}
+            <video
+              autoPlay muted loop playsInline
               style={{
-                position: "absolute", inset: 0,
-                backgroundImage: "url(/puerta-granero.webp)",
-                backgroundSize: "200% 100%",
-                backgroundPosition: "right center",
-                opacity: 0.28,
-                filter: "grayscale(0.4) brightness(0.9)",
+                position: "absolute",
+                top: "50%", left: "50%",
+                transform: "translate(-50%, -50%) scaleX(-1)",
+                minWidth: "200%", minHeight: "100%",
+                width: "auto", height: "auto",
+                mixBlendMode: "screen",
+                opacity: 0.32,
+                filter: "brightness(0.9) contrast(1.1)",
+                pointerEvents: "none",
               }}
-            />
+            >
+              <source src={VIDEO_URL} type="video/mp4" />
+            </video>
 
-            {/* Vignette lateral izquierda */}
-            <div style={{
-              position: "absolute", inset: 0,
-              background: "linear-gradient(to left, rgba(10,10,10,0.6) 0%, transparent 60%)",
-              pointerEvents: "none",
-            }} />
-
-            {/* Handle derecho */}
+            {/* Handle */}
             <div style={{
               position: "absolute", left: "16px", top: "50%",
               transform: "translateY(-50%)",
               width: "3px", height: "48px",
               background: "#2a2a2a", borderRadius: "2px",
+              zIndex: 1,
             }} />
           </motion.div>
 
-          {/* ── Línea central — junta las dos hojas ── */}
+          {/* Línea central */}
           <div style={{
             position: "absolute",
             left: "50%", top: 0, bottom: 0,
@@ -163,6 +161,7 @@ export default function DoorIntro() {
             background: "linear-gradient(to bottom, transparent 0%, #333 20%, #333 80%, transparent 100%)",
             transform: "translateX(-50%)",
             pointerEvents: "none",
+            zIndex: 2,
           }} />
 
         </div>
