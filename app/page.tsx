@@ -271,7 +271,7 @@ export default function Home() {
                 </p>
                 {[
                   { k: "Corte a medida", v: "Precisión ± 1 mm" },
-                  { k: "Materiales", v: "Melamina · MDF · Vidrio" },
+                  { k: "Materiales", v: "Melamina · MDF · Aluminio" },
                   { k: "Entrega", v: "7 a 15 días hábiles" },
                   { k: "Garantía", v: "12 meses" },
                 ].map((row, i, arr) => (
@@ -313,6 +313,43 @@ export default function Home() {
                       Sin intermediarios, sin demoras de stock.
                     </p>
                   </Curtain>
+                  {/* Tabla de descuentos por volumen */}
+                  <Curtain delay={0.25}>
+                    <div style={{ marginBottom: "32px" }}>
+                      <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "14px" }}>
+                        Descuentos por volumen
+                      </p>
+                      <div style={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: "4px", overflow: "hidden" }}>
+                        {[
+                          { rango: "1–4 puertas",  desc: "Precio de lista",    badge: null },
+                          { rango: "5–9 puertas",  desc: "Precio mayorista",   badge: "−10%" },
+                          { rango: "10–19 puertas", desc: "Distribuidor",      badge: "−15%" },
+                          { rango: "20+ puertas",  desc: "Precio de fábrica",  badge: "−20%" },
+                        ].map((row, i) => (
+                          <div key={row.rango} style={{
+                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                            padding: "13px 18px",
+                            background: i % 2 === 0 ? "rgba(255,255,255,0.03)" : "transparent",
+                            borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.07)" : "none",
+                          }}>
+                            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                              <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "rgba(255,255,255,0.4)", minWidth: "90px" }}>{row.rango}</span>
+                              <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.75)", fontWeight: 300 }}>{row.desc}</span>
+                            </div>
+                            {row.badge && (
+                              <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", fontWeight: 600, color: "#f5f4f0", background: "rgba(255,255,255,0.12)", padding: "3px 10px", borderRadius: "100px", letterSpacing: "0.05em" }}>
+                                {row.badge}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <p style={{ marginTop: "10px", fontSize: "11px", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
+                        Descuentos sobre precio final. Contactanos para coordinar producción.
+                      </p>
+                    </div>
+                  </Curtain>
+
                   <Curtain delay={0.3}>
                     <a href={`${WA_URL.replace("quiero consultar", "soy del rubro y quiero consultar precio mayorista")}`}
                       target="_blank" rel="noopener noreferrer"

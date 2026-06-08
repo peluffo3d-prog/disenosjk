@@ -1,6 +1,6 @@
 export type Ambiente = "baño" | "dormitorio" | "living" | "otro"
 export type TipoPuerta = "corredera_simple" | "plegable_doble" | "otro"
-export type Material = "blanco" | "madera" | "vidriado" | "negro" | "otro"
+export type Material = "blanco" | "madera" | "negro" | "otro"
 
 export interface ConfiguradorState {
   ambiente: Ambiente | null
