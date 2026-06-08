@@ -19,22 +19,25 @@ body  {
 .object-cover  { object-fit: cover; }
 .object-center { object-position: center; }
 
-/* ── Nav links ocultos en mobile ── */
+/* ── Nav: links → hamburguesa en mobile ── */
 @media (max-width: 768px) {
-  .nav-links { display: none !important; }
+  .nav-links  { display: none !important; }
+  .nav-burger { display: flex !important; }
 }
 
-/* ── Hero: 2 cols → apilado ── */
+/* ── Hero: 2 cols → apilado (ficha técnica debajo del texto, sin banda muerta) ── */
 @media (max-width: 768px) {
   .hero-grid {
     grid-template-columns: 1fr !important;
     min-height: auto !important;
+    padding-bottom: clamp(40px, 8vh, 64px);
   }
   .hero-img {
-    height: 56vw !important;
-    min-height: 260px;
-    order: -1;
+    order: 0 !important;
+    justify-content: flex-start !important;
+    padding: 0 clamp(24px, 5vw, 64px) !important;
   }
+  .hero-spec { max-width: 100% !important; }
 }
 
 /* ── Why: 4 cols → 2 cols ── */

@@ -13,7 +13,9 @@ const DoorIntro = dynamic(() => import("@/components/DoorIntro"), { ssr: false }
 const WA_URL    = "https://wa.me/5491100000000?text=Hola!%20Vi%20la%20web%20y%20quiero%20consultar"
 const IG_URL    = "https://instagram.com/disenosjk_"
 const EAZE      = "cubic-bezier(0.76, 0, 0.24, 1)"
-const HERO_VID  = "https://videos.pexels.com/video-files/20523638/20523638-hd_1920_1080_25fps.mp4"
+const HERO_VID  = "/escuadradora.mp4"
+
+const NAV_LINKS: [string, string][] = [["Catálogo", "#galeria"], ["Cómo funciona", "#como-funciona"], ["Cotizá", "#configurador"]]
 
 // ─── Backgrounds para secciones oscuras ──────────────────────────────────────
 function DarkBg({ src, opacity = 0.35 }: { src: string; opacity?: number }) {
@@ -42,7 +44,14 @@ function GLabel({ text }: { text: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
   const [waVisible, setWaVisible] = useState(false)
+  const [menuOpen, setMenuOpen]   = useState(false)
   const heroRef = useRef<HTMLElement>(null)
+
+  // Bloquea scroll cuando el menú mobile está abierto
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : ""
+    return () => { document.body.style.overflow = "" }
+  }, [menuOpen])
 
   useEffect(() => {
     const el = heroRef.current
@@ -86,7 +95,7 @@ export default function Home() {
           Diseños JK
         </span>
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
-          {[["Catálogo", "#galeria"], ["Cómo funciona", "#como-funciona"], ["Cotizá", "#configurador"]].map(([l, h]) => (
+          {NAV_LINKS.map(([l, h]) => (
             <a key={l} href={h} style={{
               fontSize: "13px", fontWeight: 300, letterSpacing: "0.04em",
               color: "#666", textDecoration: "none", transition: "color 0.15s",
@@ -105,7 +114,71 @@ export default function Home() {
             Ingresar
           </a>
         </div>
+
+        {/* Botón hamburguesa — solo mobile */}
+        <button className="nav-burger" onClick={() => setMenuOpen(true)} aria-label="Abrir menú"
+          style={{
+            display: "none", background: "transparent", border: "none", cursor: "pointer",
+            flexDirection: "column", gap: "5px", padding: "8px", margin: "-8px",
+          }}>
+          <span style={{ display: "block", width: "22px", height: "1.5px", background: "#0a0a0a" }} />
+          <span style={{ display: "block", width: "22px", height: "1.5px", background: "#0a0a0a" }} />
+        </button>
       </nav>
+
+      {/* ── Menú mobile — drawer full-screen ── */}
+      <div
+        aria-hidden={!menuOpen}
+        style={{
+          position: "fixed", inset: 0, zIndex: 150,
+          background: "#f5f4f0",
+          display: "flex", flexDirection: "column",
+          padding: "clamp(20px, 5vw, 56px)",
+          opacity: menuOpen ? 1 : 0,
+          pointerEvents: menuOpen ? "auto" : "none",
+          transform: menuOpen ? "translateY(0)" : "translateY(-12px)",
+          transition: `opacity 0.35s ${EAZE}, transform 0.35s ${EAZE}`,
+        }}>
+        {/* Header del drawer */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "60px", marginTop: "-20px" }}>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "21px", fontWeight: 300, letterSpacing: "0.03em" }}>
+            Diseños JK
+          </span>
+          <button onClick={() => setMenuOpen(false)} aria-label="Cerrar menú"
+            style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "26px", lineHeight: 1, color: "#0a0a0a", padding: "8px", margin: "-8px", fontWeight: 200 }}>
+            ✕
+          </button>
+        </div>
+
+        {/* Links grandes */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "clamp(32px, 8vh, 64px)", flex: 1 }}>
+          {NAV_LINKS.map(([l, h], i) => (
+            <a key={l} href={h} onClick={() => setMenuOpen(false)}
+              style={{
+                fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 11vw, 3.4rem)",
+                fontWeight: 300, letterSpacing: "-0.02em", color: "#0a0a0a",
+                textDecoration: "none", padding: "12px 0",
+                borderBottom: "1px solid rgba(0,0,0,0.08)",
+                display: "flex", alignItems: "baseline", justifyContent: "space-between",
+              }}>
+              {l}
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "#aaa", letterSpacing: "0.1em" }}>0{i + 1}</span>
+            </a>
+          ))}
+        </div>
+
+        {/* Footer del drawer — Ingresar + WA */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px", paddingBottom: "8px" }}>
+          <a href={WA_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}
+            style={{ textAlign: "center", padding: "16px", background: "#0a0a0a", color: "#f5f4f0", fontSize: "14px", fontWeight: 500, letterSpacing: "0.03em", textDecoration: "none", borderRadius: "3px" }}>
+            Cotizá por WhatsApp
+          </a>
+          <a href="/login" onClick={() => setMenuOpen(false)}
+            style={{ textAlign: "center", padding: "14px", fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#666", textDecoration: "none" }}>
+            Ingresar a mi cuenta
+          </a>
+        </div>
+      </div>
 
       {/* ── Smooth scroll wraps todo ── */}
       <SmoothScroll>
@@ -120,9 +193,9 @@ export default function Home() {
             overflow: "hidden",
           }}>
 
-            {/* Video full-bleed — misma técnica laser cut */}
+            {/* Video full-bleed — misma técnica laser cut, servido local */}
             <video
-              autoPlay muted loop playsInline
+              autoPlay muted loop playsInline preload="auto"
               style={{
                 position: "absolute",
                 top: "50%", left: "50%",
@@ -185,8 +258,38 @@ export default function Home() {
               </Curtain>
             </div>
 
-            {/* Lado derecho — oscuro, el video se ve más intenso acá */}
-            <div className="hero-img" style={{ position: "relative", zIndex: 1 }} />
+            {/* Lado derecho — ficha técnica flotante */}
+            <div className="hero-img" style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(32px, 5vw, 64px)" }}>
+              <Curtain delay={0.6}>
+                <div className="hero-spec" style={{
+                  width: "100%", maxWidth: "360px",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  backdropFilter: "blur(6px)",
+                  borderRadius: "4px",
+                  padding: "clamp(24px, 3vw, 36px)",
+                }}>
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "24px" }}>
+                    Ficha técnica
+                  </p>
+                  {[
+                    { k: "Corte a medida", v: "Precisión ± 1 mm" },
+                    { k: "Materiales", v: "Melamina · MDF · Vidrio" },
+                    { k: "Entrega", v: "7 a 15 días hábiles" },
+                    { k: "Garantía", v: "12 meses" },
+                  ].map((row, i, arr) => (
+                    <div key={row.k} style={{
+                      display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "16px",
+                      padding: "14px 0",
+                      borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none",
+                    }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>{row.k}</span>
+                      <span style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1rem, 1.6vw, 1.25rem)", fontWeight: 300, color: "#f5f4f0", textAlign: "right", lineHeight: 1.2 }}>{row.v}</span>
+                    </div>
+                  ))}
+                </div>
+              </Curtain>
+            </div>
           </section>
 
           {/* ── POR QUÉ NOSOTROS — imagen de fondo ── */}
