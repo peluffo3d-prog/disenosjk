@@ -194,137 +194,160 @@ export default function Home() {
           }}>
 
             {/* Video full-bleed — misma técnica laser cut, servido local */}
-            <video
-              autoPlay muted loop playsInline preload="auto"
+            <video autoPlay muted loop playsInline preload="auto"
               style={{
-                position: "absolute",
-                top: "50%", left: "50%",
+                position: "absolute", top: "50%", left: "50%",
                 transform: "translate(-50%, -50%)",
                 minWidth: "100%", minHeight: "100%",
                 width: "auto", height: "auto",
                 mixBlendMode: "screen",
                 opacity: 0.28,
                 filter: "brightness(0.85) saturate(0.8) contrast(1.2)",
-                pointerEvents: "none",
-                zIndex: 0,
-              }}
-            >
+                pointerEvents: "none", zIndex: 0,
+              }}>
               <source src={HERO_VID} type="video/mp4" />
             </video>
 
-            {/* Contenido izquierdo — z-index sobre el video */}
+            {/* Contenido izquierdo — animaciones CSS directas, sin observer */}
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(48px, 8vh, 88px) clamp(24px, 5vw, 64px)", position: "relative", zIndex: 1 }}>
-              <Curtain delay={0.1}>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "24px" }}>
-                  Fabricantes directos · CABA y GBA
-                </p>
-              </Curtain>
+
+              <p className="hero-anim" style={{ animationDelay: "0.1s", fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "24px" }}>
+                Fabricantes directos · CABA y GBA
+              </p>
 
               <SplitLines
                 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3.8rem, 7.5vw, 7.5rem)", fontWeight: 300, lineHeight: 1, letterSpacing: "-0.02em", color: "#f5f4f0", marginBottom: "28px" }}
-                baseDelay={0.15}
+                baseDelay={0.2}
               >{"Puertas\ncorredizas\na tu medida."}</SplitLines>
 
-              <Curtain delay={0.5}>
-                <p style={{ fontSize: "15px", lineHeight: 1.75, color: "rgba(255,255,255,0.55)", maxWidth: "340px", marginBottom: "40px" }}>
-                  Fabricamos e instalamos en tu casa, sin obra.<br />Elegís el modelo, cotizás en minutos.
-                </p>
-              </Curtain>
+              <p className="hero-anim" style={{ animationDelay: "0.55s", fontSize: "15px", lineHeight: 1.75, color: "rgba(255,255,255,0.55)", maxWidth: "340px", marginBottom: "36px" }}>
+                Fabricamos e instalamos en tu casa, sin obra.<br />Medidas exactas, precio en minutos.
+              </p>
 
-              <Curtain delay={0.65}>
-                <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", alignItems: "center", marginBottom: "clamp(40px, 6vh, 64px)" }}>
-                  <a href="#configurador" style={{ padding: "13px 26px", background: "#f5f4f0", color: "#0a0a0a", fontSize: "14px", fontWeight: 400, letterSpacing: "0.01em", textDecoration: "none", borderRadius: "3px", transition: "opacity 0.2s" }}
-                    onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-                    onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-                    Armá tu puerta
-                  </a>
-                  <a href="#galeria" style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", textDecoration: "none", paddingBottom: "2px", borderBottom: "1px solid rgba(255,255,255,0.25)", transition: "color 0.15s, border-color 0.15s" }}
-                    onMouseEnter={e => { e.currentTarget.style.color = "#f5f4f0"; e.currentTarget.style.borderColor = "#f5f4f0" }}
-                    onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.5)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)" }}>
-                    Ver modelos →
-                  </a>
-                </div>
-              </Curtain>
+              <div className="hero-anim" style={{ animationDelay: "0.7s", display: "flex", gap: "14px", flexWrap: "wrap", alignItems: "center", marginBottom: "clamp(40px, 6vh, 64px)" }}>
+                <a href="#configurador"
+                  style={{ padding: "14px 28px", background: "#f5f4f0", color: "#0a0a0a", fontSize: "14px", fontWeight: 500, letterSpacing: "0.01em", textDecoration: "none", borderRadius: "3px", transition: "opacity 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+                  Armá tu puerta →
+                </a>
+                <a href={WA_URL} target="_blank" rel="noopener noreferrer"
+                  style={{ padding: "14px 28px", background: "transparent", color: "#f5f4f0", fontSize: "14px", fontWeight: 400, letterSpacing: "0.01em", textDecoration: "none", borderRadius: "3px", border: "1px solid rgba(255,255,255,0.25)", transition: "border-color 0.2s, background 0.2s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#f5f4f0"; e.currentTarget.style.background = "rgba(255,255,255,0.06)" }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)"; e.currentTarget.style.background = "transparent" }}>
+                  Consultar por WhatsApp
+                </a>
+              </div>
 
-              <Curtain delay={0.75}>
-                <div style={{ display: "flex", gap: "clamp(24px, 4vw, 48px)", paddingTop: "clamp(24px, 4vh, 36px)", borderTop: "1px solid rgba(255,255,255,0.1)", flexWrap: "wrap" }}>
-                  {[{ n: "+500", l: "Puertas instaladas" }, { n: "41K", l: "Seguidores en IG" }, { n: "6", l: "Cuotas sin interés" }].map(({ n, l }) => (
-                    <div key={l}>
-                      <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 300, lineHeight: 1, color: "#f5f4f0" }}>{n}</p>
-                      <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.45)", marginTop: "5px", letterSpacing: "0.02em" }}>{l}</p>
-                    </div>
-                  ))}
-                </div>
-              </Curtain>
+              {/* Stats */}
+              <div className="hero-anim" style={{ animationDelay: "0.85s", display: "flex", gap: "clamp(24px, 4vw, 48px)", paddingTop: "clamp(20px, 3vh, 32px)", borderTop: "1px solid rgba(255,255,255,0.1)", flexWrap: "wrap" }}>
+                {[{ n: "+500", l: "Puertas instaladas" }, { n: "41K", l: "Seguidores en IG" }, { n: "6", l: "Cuotas sin interés" }].map(({ n, l }) => (
+                  <div key={l}>
+                    <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 300, lineHeight: 1, color: "#f5f4f0" }}>{n}</p>
+                    <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.45)", marginTop: "5px", letterSpacing: "0.02em" }}>{l}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pie de hero */}
+              <p className="hero-anim" style={{ animationDelay: "1s", marginTop: "clamp(24px, 4vh, 40px)", fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+                San Justo, La Matanza · Buenos Aires · Fábrica propia
+              </p>
             </div>
 
             {/* Lado derecho — ficha técnica flotante */}
             <div className="hero-img" style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(32px, 5vw, 64px)" }}>
-              <Curtain delay={0.6}>
-                <div className="hero-spec" style={{
-                  width: "100%", maxWidth: "360px",
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  backdropFilter: "blur(6px)",
-                  borderRadius: "4px",
-                  padding: "clamp(24px, 3vw, 36px)",
-                }}>
-                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "24px" }}>
-                    Ficha técnica
-                  </p>
-                  {[
-                    { k: "Corte a medida", v: "Precisión ± 1 mm" },
-                    { k: "Materiales", v: "Melamina · MDF · Vidrio" },
-                    { k: "Entrega", v: "7 a 15 días hábiles" },
-                    { k: "Garantía", v: "12 meses" },
-                  ].map((row, i, arr) => (
-                    <div key={row.k} style={{
-                      display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "16px",
-                      padding: "14px 0",
-                      borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none",
-                    }}>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>{row.k}</span>
-                      <span style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1rem, 1.6vw, 1.25rem)", fontWeight: 300, color: "#f5f4f0", textAlign: "right", lineHeight: 1.2 }}>{row.v}</span>
-                    </div>
-                  ))}
-                </div>
-              </Curtain>
+              <div className="hero-anim hero-spec" style={{
+                animationDelay: "0.6s",
+                width: "100%", maxWidth: "360px",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                backdropFilter: "blur(6px)",
+                borderRadius: "4px",
+                padding: "clamp(24px, 3vw, 36px)",
+              }}>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "24px" }}>
+                  Ficha técnica
+                </p>
+                {[
+                  { k: "Corte a medida", v: "Precisión ± 1 mm" },
+                  { k: "Materiales", v: "Melamina · MDF · Vidrio" },
+                  { k: "Entrega", v: "7 a 15 días hábiles" },
+                  { k: "Garantía", v: "12 meses" },
+                ].map((row, i, arr) => (
+                  <div key={row.k} style={{
+                    display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "16px",
+                    padding: "14px 0",
+                    borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none",
+                  }}>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>{row.k}</span>
+                    <span style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1rem, 1.6vw, 1.25rem)", fontWeight: 300, color: "#f5f4f0", textAlign: "right", lineHeight: 1.2 }}>{row.v}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
-          {/* ── POR QUÉ NOSOTROS — imagen de fondo ── */}
-          <section style={{ position: "relative", color: "#f5f4f0", padding: "clamp(120px, 14vh, 160px) clamp(24px, 5vw, 56px)" }}>
-            <DarkBg src="/puerta-granero.webp" opacity={0.3} />
+          {/* ── PARA EL RUBRO — sección B2B ── */}
+          <section style={{ position: "relative", color: "#f5f4f0", padding: "clamp(100px, 12vh, 140px) clamp(24px, 5vw, 56px)" }}>
+            <DarkBg src="/puerta-granero.webp" opacity={0.25} />
             <div style={{ position: "relative", zIndex: 1 }}>
-              <Curtain>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.72)", marginBottom: "16px" }}>
-                  Por qué elegirnos
-                </p>
-              </Curtain>
-              <SplitLines
-                style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.5rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.05, marginBottom: "0" }}
-                baseDelay={0.05}
-              >{"Fabricantes.\nNo revendedores."}</SplitLines>
 
-              <DarkRule my={56} />
+              <div className="b2b-layout" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(48px, 6vw, 96px)", alignItems: "start" }}>
 
-              <div className="why-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "3px", overflow: "hidden" }}>
-                {[
-                  { n: "01", title: "Fabricación propia",  desc: "Cada puerta desde cero a tus medidas. Sin stock genérico." },
-                  { n: "02", title: "A medida",            desc: "No adaptamos estándar. Fabricamos desde el primer milímetro." },
-                  { n: "03", title: "Envío incluido",      desc: "Llegamos a CABA y GBA. El precio es el precio final." },
-                  { n: "04", title: "Hasta 6 cuotas",      desc: "Pagá en cuotas sin interés a través de Mercado Libre." },
-                ].map((item, i) => (
-                  <Curtain key={item.n} delay={i * 0.1} style={{ height: "100%" }}>
-                    <div className="why-item" style={{ padding: "32px 24px", height: "100%", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.1)" : "none", transition: "background 0.3s", cursor: "default" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                      <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.52)", marginBottom: "18px" }}>{item.n}</p>
-                      <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "10px", lineHeight: 1.3 }}>{item.title}</p>
-                      <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.72)", lineHeight: 1.7 }}>{item.desc}</p>
-                    </div>
+                {/* Izquierda — pitch */}
+                <div>
+                  <Curtain>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", marginBottom: "16px" }}>
+                      Para carpinteros · instaladores · constructoras
+                    </p>
                   </Curtain>
-                ))}
+                  <SplitLines
+                    style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.8rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.02, marginBottom: "32px" }}
+                    baseDelay={0.05}
+                  >{"¿Trabajás\nen el rubro?"}</SplitLines>
+                  <Curtain delay={0.2}>
+                    <p style={{ fontSize: "15px", lineHeight: 1.8, color: "rgba(255,255,255,0.65)", maxWidth: "420px", marginBottom: "40px" }}>
+                      Somos fábrica. Eso significa que podés comprar al precio que ningún local te da,
+                      pedir el volumen que necesitás y recibir las puertas en obra, a medida exacta.
+                      Sin intermediarios, sin demoras de stock.
+                    </p>
+                  </Curtain>
+                  <Curtain delay={0.3}>
+                    <a href={`${WA_URL.replace("quiero consultar", "soy del rubro y quiero consultar precio mayorista")}`}
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ display: "inline-flex", alignItems: "center", gap: "10px", padding: "14px 28px", background: "#f5f4f0", color: "#0a0a0a", fontSize: "13px", fontWeight: 500, letterSpacing: "0.03em", textDecoration: "none", borderRadius: "3px", transition: "opacity 0.2s" }}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+                      Consultar precio mayorista →
+                    </a>
+                  </Curtain>
+                </div>
+
+                {/* Derecha — propuestas de valor */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+                  {[
+                    { n: "01", title: "Precio de fábrica",      desc: "Comprás directo al fabricante. Sin pasar por distribuidor ni local. El margen es tuyo." },
+                    { n: "02", title: "Blanco para revendedores", desc: "Sin marca en la puerta. La vendés como tuya, la hacemos nosotros. Ideal para muebleros e instaladores." },
+                    { n: "03", title: "Pedidos en volumen",      desc: "Desde una unidad hasta stock para tu local. Coordinamos producción según tu obra o proyecto." },
+                    { n: "04", title: "Factura A disponible",    desc: "Trabajamos con personas y empresas. Emitimos factura A para constructoras y profesionales." },
+                  ].map((item, i) => (
+                    <Curtain key={item.n} delay={i * 0.08}>
+                      <div className="b2b-item" style={{ padding: "24px 0", borderBottom: "1px solid rgba(255,255,255,0.1)", transition: "padding-left 0.25s", cursor: "default" }}
+                        onMouseEnter={e => (e.currentTarget.style.paddingLeft = "12px")}
+                        onMouseLeave={e => (e.currentTarget.style.paddingLeft = "0")}>
+                        <div style={{ display: "flex", gap: "16px", alignItems: "baseline" }}>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", flexShrink: 0 }}>{item.n}</span>
+                          <div>
+                            <p style={{ fontSize: "14px", fontWeight: 500, color: "#f5f4f0", marginBottom: "6px", lineHeight: 1.3 }}>{item.title}</p>
+                            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", lineHeight: 1.75 }}>{item.desc}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </Curtain>
+                  ))}
+                </div>
+
               </div>
             </div>
           </section>
