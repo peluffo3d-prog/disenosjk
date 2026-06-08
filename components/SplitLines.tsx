@@ -1,8 +1,10 @@
 "use client"
 import { useRef, useEffect } from "react"
 
-// Cada línea de texto sube desde translateY(108%) → 0, stagger de 0.12s
-// Pasar el texto con \n para separar líneas manualmente
+// Cada línea sube desde translateY(108%) → 0, stagger de 0.12s.
+// Usa scroll + getBoundingClientRect (no IntersectionObserver) para que
+// funcione dentro del wrapper transformado de SmoothScroll.
+// Pasar el texto con \n para separar líneas manualmente.
 export default function SplitLines({
   children,
   style,
@@ -19,24 +21,29 @@ export default function SplitLines({
   useEffect(() => {
     const el = ref.current
     if (!el) return
-
     const inners = el.querySelectorAll<HTMLElement>(".sl-i")
 
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          inners.forEach((s, i) => {
-            s.style.transform = "translateY(0)"
-            s.style.opacity   = "1"
-            s.style.transitionDelay = `${baseDelay + i * 0.12}s`
-          })
-          obs.disconnect()
-        }
-      },
-      { threshold: 0.05 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
+    let done = false
+    const reveal = () => {
+      if (done) return
+      done = true
+      inners.forEach((s, i) => {
+        s.style.transform = "translateY(0)"
+        s.style.opacity   = "1"
+        s.style.transitionDelay = `${baseDelay + i * 0.12}s`
+      })
+      window.removeEventListener("scroll", check)
+    }
+    const check = () => {
+      const r = el.getBoundingClientRect()
+      if (r.top < window.innerHeight * 0.92 && r.bottom > 0) reveal()
+    }
+
+    check()
+    window.addEventListener("scroll", check, { passive: true })
+    const t = setTimeout(reveal, 2500)
+
+    return () => { window.removeEventListener("scroll", check); clearTimeout(t) }
   }, [baseDelay])
 
   const lines = children.split("\n").filter(l => l.trim() !== "")

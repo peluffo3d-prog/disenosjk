@@ -106,6 +106,17 @@ body  {
   .b2b-layout { grid-template-columns: 1fr !important; }
 }
 
+/* ── Configurador: pasos + resumen sticky → 1 col, resumen arriba ── */
+@media (max-width: 900px) {
+  .config-grid    { grid-template-columns: 1fr !important; }
+  .config-summary {
+    position: sticky !important;
+    top: 60px !important;
+    order: -1;                /* resumen arriba en mobile */
+    z-index: 40;
+  }
+}
+
 /* ── Dashboard ── */
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }

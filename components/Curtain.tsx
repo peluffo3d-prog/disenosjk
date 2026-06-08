@@ -1,7 +1,9 @@
 "use client"
 import { useRef, useEffect } from "react"
 
-// Curtain wipe — clip-path de 100%→0% al entrar en viewport
+// Curtain wipe — clip-path de 100%→0% al entrar en viewport.
+// Usa scroll + getBoundingClientRect (no IntersectionObserver) para que
+// funcione dentro del wrapper transformado de SmoothScroll.
 export default function Curtain({
   children,
   style,
@@ -18,23 +20,26 @@ export default function Curtain({
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    if (delay > 0) el.style.transitionDelay = `${delay}s`
 
-    // Pequeño delay antes de activar la transición
-    if (delay > 0) {
-      el.style.transitionDelay = `${delay}s`
+    let done = false
+    const reveal = () => {
+      if (done) return
+      done = true
+      el.style.clipPath = "inset(0 0 0% 0)"
+      window.removeEventListener("scroll", check)
+    }
+    const check = () => {
+      const r = el.getBoundingClientRect()
+      if (r.top < window.innerHeight * 0.92 && r.bottom > 0) reveal()
     }
 
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.style.clipPath = "inset(0 0 0% 0)"
-          obs.disconnect()
-        }
-      },
-      { threshold: 0.08 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
+    check() // revela lo que ya está en viewport al montar
+    window.addEventListener("scroll", check, { passive: true })
+    // Fallback de seguridad: si algo falla, mostrar igual
+    const t = setTimeout(reveal, 2500)
+
+    return () => { window.removeEventListener("scroll", check); clearTimeout(t) }
   }, [delay])
 
   return (

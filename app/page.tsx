@@ -220,7 +220,7 @@ export default function Home() {
                 baseDelay={0.2}
               >{"Puertas\ncorredizas\na tu medida."}</SplitLines>
 
-              <p className="hero-anim" style={{ animationDelay: "0.55s", fontSize: "15px", lineHeight: 1.75, color: "rgba(255,255,255,0.55)", maxWidth: "340px", marginBottom: "36px" }}>
+              <p className="hero-anim" style={{ animationDelay: "0.55s", fontSize: "15px", lineHeight: 1.75, color: "rgba(255,255,255,0.7)", maxWidth: "340px", marginBottom: "36px" }}>
                 Fabricamos e instalamos en tu casa, sin obra.<br />Medidas exactas, precio en minutos.
               </p>
 
@@ -250,7 +250,7 @@ export default function Home() {
               </div>
 
               {/* Pie de hero */}
-              <p className="hero-anim" style={{ animationDelay: "1s", marginTop: "clamp(24px, 4vh, 40px)", fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+              <p className="hero-anim" style={{ animationDelay: "1s", marginTop: "clamp(24px, 4vh, 40px)", fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.42)" }}>
                 San Justo, La Matanza · Buenos Aires · Fábrica propia
               </p>
             </div>
@@ -271,7 +271,7 @@ export default function Home() {
                 </p>
                 {[
                   { k: "Corte a medida", v: "Precisión ± 1 mm" },
-                  { k: "Materiales", v: "Melamina · MDF · Aluminio" },
+                  { k: "Materiales", v: "Melamina · MDF" },
                   { k: "Entrega", v: "7 a 15 días hábiles" },
                   { k: "Garantía", v: "12 meses" },
                 ].map((row, i, arr) => (
