@@ -194,13 +194,12 @@ export default function Home() {
             overflow: "hidden",
           }}>
 
-            {/* Video full-bleed — misma técnica laser cut, servido local */}
+            {/* Video full-bleed — object-fit:cover cubre cualquier proporción (desktop 16:9, mobile portrait) */}
             <video autoPlay muted loop playsInline preload="auto"
               style={{
-                position: "absolute", top: "50%", left: "50%",
-                transform: "translate(-50%, -50%)",
-                minWidth: "100%", minHeight: "100%",
-                width: "auto", height: "auto",
+                position: "absolute", inset: 0,
+                width: "100%", height: "100%",
+                objectFit: "cover", objectPosition: "center",
                 mixBlendMode: "screen",
                 opacity: 0.28,
                 filter: "brightness(0.85) saturate(0.8) contrast(1.2)",

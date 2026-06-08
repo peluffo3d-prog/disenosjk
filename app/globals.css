@@ -124,11 +124,17 @@ body  {
   .b2b-layout { grid-template-columns: 1fr !important; }
 }
 
-/* ── Configurador: pasos full-width en mobile, aside oculto (barra bottom lo reemplaza) ── */
+/* ── Configurador mobile: 1 columna, aside eliminado visualmente + funcionalmente ── */
 @media (max-width: 900px) {
   .config-grid    { grid-template-columns: 1fr !important; }
-  .config-summary { display: none !important; }
-  /* Más espacio para tocar los botones */
+  .config-summary {
+    display: none !important;
+    position: static !important;  /* mata el sticky */
+    visibility: hidden !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
   .ambiente-grid button { min-height: 44px; }
 }
 

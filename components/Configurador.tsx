@@ -345,8 +345,8 @@ export default function Configurador() {
           </AnimatePresence>
         </div>
 
-        {/* ── Panel resumen sticky (oscuro) — solo desktop ── */}
-        <aside className="config-summary" style={{ position: "sticky", top: "80px", background: "#0a0a0a", borderRadius: "6px", padding: "clamp(24px, 3vw, 36px)", color: "#f5f4f0", display: isMobile ? "none" : undefined }}>
+        {/* ── Panel resumen sticky (oscuro) — solo desktop, no se monta en mobile ── */}
+        {!isMobile && <aside className="config-summary" style={{ position: "sticky", top: "80px", background: "#0a0a0a", borderRadius: "6px", padding: "clamp(24px, 3vw, 36px)", color: "#f5f4f0" }}>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "20px" }}>Tu puerta</p>
 
           <DoorPreview cfg={cfg} />
@@ -415,7 +415,7 @@ export default function Configurador() {
               </div>
             )}
           </div>
-        </aside>
+        </aside>}
       </div>
     </section>
   )
