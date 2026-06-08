@@ -1,18 +1,25 @@
 "use client"
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 
-// Lerp scroll estilo Garofoli — deshabilitado en touch (pointer: coarse)
+// Lerp scroll estilo Garofoli — SOLO desktop con puntero fino.
+// En mobile/touch renderiza el contenido normal (scroll nativo, todo clickeable).
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   const wrapRef   = useRef<HTMLDivElement>(null)
   const spacerRef = useRef<HTMLDivElement>(null)
   const cur       = useRef(0)
   const tgt       = useRef(0)
   const raf       = useRef(0)
+  const [enabled, setEnabled] = useState(false)
+
+  // Decide en el cliente si activar el smooth scroll (nunca en touch ni mobile)
+  useEffect(() => {
+    const coarse = window.matchMedia("(pointer: coarse)").matches
+    const small  = window.matchMedia("(max-width: 768px)").matches
+    if (!coarse && !small) setEnabled(true)
+  }, [])
 
   useEffect(() => {
-    // Solo desktop — en touch el scroll nativo es más suave
-    if (window.matchMedia("(pointer: coarse)").matches) return
-
+    if (!enabled) return
     const wrap   = wrapRef.current
     const spacer = spacerRef.current
     if (!wrap || !spacer) return
@@ -27,15 +34,11 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     window.addEventListener("scroll", onScroll, { passive: true })
 
     const tick = () => {
-      // Garofoli usa ~0.06-0.08
       cur.current += (tgt.current - cur.current) * 0.08
       if (Math.abs(tgt.current - cur.current) < 0.05) cur.current = tgt.current
 
       wrap.style.transform = `translateY(${-cur.current}px)`
 
-      // Hero parallax — el elemento con data-parallax="0.5" se mueve a 0.5x
-      // Net effect: wrapper va a -cur, el elemento va a +cur*speed
-      // Resultado: elemento se mueve a velocidad (speed - 1) * cur → efecto parallax
       const parallaxEls = document.querySelectorAll<HTMLElement>("[data-parallax]")
       parallaxEls.forEach(el => {
         const speed = parseFloat(el.dataset.parallax ?? "0.5")
@@ -51,14 +54,15 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       window.removeEventListener("scroll", onScroll)
       cancelAnimationFrame(raf.current)
     }
-  }, [])
+  }, [enabled])
 
+  // Mobile / touch / SSR: render normal, scroll nativo, todo clickeable
+  if (!enabled) return <>{children}</>
+
+  // Desktop fino: smooth scroll con wrapper fijo
   return (
     <>
-      {/* Establece la altura de scroll nativo */}
       <div ref={spacerRef} aria-hidden style={{ pointerEvents: "none", visibility: "hidden", width: "100%" }} />
-
-      {/* Viewport fijo — contenido se traduce dentro */}
       <div style={{ position: "fixed", inset: 0, overflow: "hidden", zIndex: 1 }}>
         <div ref={wrapRef} style={{ willChange: "transform" }}>
           {children}

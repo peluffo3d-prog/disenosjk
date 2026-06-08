@@ -30,12 +30,17 @@ body  {
   .hero-grid {
     grid-template-columns: 1fr !important;
     min-height: auto !important;
-    padding-bottom: clamp(40px, 8vh, 64px);
+    padding-bottom: clamp(32px, 6vh, 48px);
+  }
+  /* Menos padding vertical en mobile — el hero no necesita ser tan largo */
+  .hero-copy {
+    padding: clamp(28px, 5vh, 44px) clamp(24px, 5vw, 64px) clamp(8px, 2vh, 16px) !important;
+    justify-content: flex-start !important;
   }
   .hero-img {
     order: 0 !important;
     justify-content: flex-start !important;
-    padding: 0 clamp(24px, 5vw, 64px) !important;
+    padding: clamp(12px, 3vh, 20px) clamp(24px, 5vw, 64px) 0 !important;
   }
   .hero-spec { max-width: 100% !important; }
 }

@@ -209,7 +209,7 @@ export default function Home() {
             </video>
 
             {/* Contenido izquierdo — animaciones CSS directas, sin observer */}
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(48px, 8vh, 88px) clamp(24px, 5vw, 64px)", position: "relative", zIndex: 1 }}>
+            <div className="hero-copy" style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(48px, 8vh, 88px) clamp(24px, 5vw, 64px)", position: "relative", zIndex: 1 }}>
 
               <p className="hero-anim" style={{ animationDelay: "0.1s", fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "24px" }}>
                 Fabricantes directos · CABA y GBA
