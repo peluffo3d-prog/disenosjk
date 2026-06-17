@@ -588,6 +588,55 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ── INSTAGRAM — galería social ── */}
+          <section style={{ background: "#f5f4f0", padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)", borderTop: "1px solid rgba(0,0,0,0.08)" }}>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "40px" }}>
+              <div>
+                <Curtain>
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>
+                    Seguinos
+                  </p>
+                </Curtain>
+                <SplitLines
+                  style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.5rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.05 }}
+                  baseDelay={0.05}
+                >{"@disenosjk_"}</SplitLines>
+              </div>
+              <Curtain delay={0.3}>
+                <a href={IG_URL} target="_blank" rel="noopener noreferrer"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 24px", background: "#0a0a0a", color: "#f5f4f0", fontSize: "13px", fontWeight: 500, letterSpacing: "0.02em", textDecoration: "none", borderRadius: "3px", whiteSpace: "nowrap", transition: "opacity 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+                  Seguir en Instagram →
+                </a>
+              </Curtain>
+            </div>
+
+            <div className="ig-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+              {[
+                { img: "/puerta-granero.webp",  alt: "Puerta estilo granero instalada" },
+                { img: "/puerta-blanca.webp",   alt: "Puerta corrediza blanca instalada" },
+                { img: "/puerta-producto.webp", alt: "Puerta plegable a medida" },
+              ].map((post, i) => (
+                <Curtain key={post.img} delay={i * 0.1}>
+                  <a href={IG_URL} target="_blank" rel="noopener noreferrer"
+                    style={{ display: "block", position: "relative", aspectRatio: "1/1", overflow: "hidden", background: "#e8e6e0" }}
+                    onMouseEnter={e => { const o = e.currentTarget.querySelector("[data-ov]") as HTMLElement; if (o) o.style.opacity = "1" }}
+                    onMouseLeave={e => { const o = e.currentTarget.querySelector("[data-ov]") as HTMLElement; if (o) o.style.opacity = "0" }}>
+                    <Image src={post.img} alt={post.alt} fill className="object-cover" sizes="(max-width: 600px) 50vw, 33vw" />
+                    <div data-ov style={{
+                      position: "absolute", inset: 0, background: "rgba(10,10,10,0.45)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      opacity: 0, transition: "opacity 0.25s",
+                    }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: "#f5f4f0" }}>Ver en Instagram →</span>
+                    </div>
+                  </a>
+                </Curtain>
+              ))}
+            </div>
+          </section>
+
           {/* ── PARA EL RUBRO — sección B2B ── */}
           <section style={{ position: "relative", color: "#f5f4f0", padding: "clamp(100px, 12vh, 140px) clamp(24px, 5vw, 56px)" }}>
             <DarkBg src="/puerta-granero.webp" opacity={0.25} />
