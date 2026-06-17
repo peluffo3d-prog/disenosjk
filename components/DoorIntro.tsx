@@ -1,29 +1,25 @@
 "use client"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
 
 export default function DoorIntro() {
-  const [visible,  setVisible]  = useState(false)
+  const [shouldShow] = useState<boolean>(() => {
+    try { return !sessionStorage.getItem("jk_intro_seen") } catch { return false }
+  })
+  const [visible,  setVisible]  = useState(shouldShow)
   const [opening,  setOpening]  = useState(false)
-  const initialized = useRef(false)
 
   useEffect(() => {
-    if (initialized.current) return
-    initialized.current = true
-    if (sessionStorage.getItem("jk_intro_seen")) return
-
-    setVisible(true)
+    if (!shouldShow) return
     document.body.style.overflow = "hidden"
-
     const t1 = setTimeout(() => setOpening(true), 750)
     const t2 = setTimeout(() => {
       setVisible(false)
       document.body.style.overflow = ""
       sessionStorage.setItem("jk_intro_seen", "1")
     }, 1900)
-
     return () => { clearTimeout(t1); clearTimeout(t2) }
-  }, [])
+  }, [shouldShow])
 
   const panelVariants = {
     closed: { x: 0 },

@@ -42,6 +42,7 @@ export default function ScaleImage({
           willChange:   "transform",
           height:       "100%",
           width:        "100%",
+          position:     "relative",
         }}
       >
         {children}

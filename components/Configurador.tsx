@@ -1,8 +1,8 @@
 "use client"
 import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import type { ConfiguradorState, Ambiente, TipoPuerta, Material } from "@/types"
-import { calcularPrecio, fmtARS } from "@/lib/precios"
+import type { ConfiguradorState, Ambiente, TipoPuerta, Material, Revestimiento, PrecioDB } from "@/types"
+import { calcularPrecioConRows, fmtARS, STATIC_PRECIO_ROWS } from "@/lib/precios"
 
 const WA = "5491100000000"
 const EAZE = [0.76, 0, 0.24, 1] as [number, number, number, number]
@@ -66,9 +66,15 @@ const MATERIALES: { value: Material; label: string; swatch: string }[] = [
 ]
 
 const INITIAL: ConfiguradorState = {
-  ambiente: null, tipo: null, material: null,
+  ambiente: null, tipo: null, material: null, revestimiento: "estandar",
   ancho: null, alto: null, instalacion: false, localidad: "",
 }
+
+// Opciones de revestimiento — estándar (melamina) vs premium (aluminio anti-humedad)
+const REVESTIMIENTOS: { value: Revestimiento; label: string; desc: string; extra: string }[] = [
+  { value: "estandar", label: "Estándar",          desc: "Melamina de alta resistencia",                 extra: "Incluido" },
+  { value: "premium",  label: "Premium · aluminio", desc: "Chapa de aluminio que sella la humedad y alarga la vida útil", extra: "+30%" },
+]
 
 // ─── Preview en vivo de la puerta ──────────────────────────────────────────────
 function DoorPreview({ cfg }: { cfg: ConfiguradorState }) {
@@ -78,6 +84,7 @@ function DoorPreview({ cfg }: { cfg: ConfiguradorState }) {
   const mat = MATERIALES.find(m => m.value === cfg.material)
   const swatch = mat?.swatch ?? "#3a3a3a"
   const filled = !!cfg.material
+  const premium = cfg.revestimiento === "premium"
 
   return (
     <div style={{ height: "200px", display: "flex", alignItems: "flex-end", justifyContent: "center", marginBottom: "24px" }}>
@@ -88,9 +95,11 @@ function DoorPreview({ cfg }: { cfg: ConfiguradorState }) {
         <div style={{
           height: "92%", aspectRatio: String(ratio),
           background: filled ? swatch : "rgba(255,255,255,0.06)",
-          border: filled ? (cfg.material === "negro" ? "1px solid rgba(255,255,255,0.18)" : "none") : "1px dashed rgba(255,255,255,0.2)",
+          border: filled && premium
+            ? "2px solid #c9ccd1" // marco de aluminio premium
+            : filled ? (cfg.material === "negro" ? "1px solid rgba(255,255,255,0.18)" : "none") : "1px dashed rgba(255,255,255,0.2)",
           borderRadius: "2px", position: "relative",
-          transition: "aspect-ratio 0.4s cubic-bezier(0.76,0,0.24,1), background 0.3s",
+          transition: "aspect-ratio 0.4s cubic-bezier(0.76,0,0.24,1), background 0.3s, border-color 0.3s",
           boxShadow: filled ? "0 8px 30px rgba(0,0,0,0.35)" : "none",
         }}>
           {/* Manija */}
@@ -104,12 +113,13 @@ function DoorPreview({ cfg }: { cfg: ConfiguradorState }) {
 }
 
 export default function Configurador() {
-  const [cfg, setCfg]         = useState<ConfiguradorState>(INITIAL)
-  const [nombre, setNombre]   = useState("")
-  const [email, setEmail]     = useState("")
-  const [tel, setTel]         = useState("")
-  const [loading, setLoading] = useState(false)
+  const [cfg, setCfg]           = useState<ConfiguradorState>(INITIAL)
+  const [nombre, setNombre]     = useState("")
+  const [email, setEmail]       = useState("")
+  const [tel, setTel]           = useState("")
+  const [loading, setLoading]   = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [precioRows, setPrecioRows] = useState<PrecioDB[]>(STATIC_PRECIO_ROWS)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 900)
@@ -118,7 +128,17 @@ export default function Configurador() {
     return () => window.removeEventListener("resize", check)
   }, [])
 
-  const precio   = calcularPrecio(cfg)
+  // Carga precios desde la DB al montar; si falla usa los estáticos como fallback
+  useEffect(() => {
+    fetch("/api/precios")
+      .then(r => r.ok ? r.json() : null)
+      .then((data: PrecioDB[] | null) => {
+        if (Array.isArray(data) && data.length > 0) setPrecioRows(data)
+      })
+      .catch(() => {})
+  }, [])
+
+  const precio   = calcularPrecioConRows(cfg, precioRows)
   const completo = !!(cfg.ambiente && cfg.tipo && cfg.material && cfg.ancho && cfg.alto)
   const listoPagar = completo && precio.estandar && !!nombre && !!email
 
@@ -130,6 +150,7 @@ export default function Configurador() {
        cfg.ambiente && `Ambiente: ${cfg.ambiente}`,
        cfg.tipo     && `Tipo: ${cfg.tipo.replace("_", " ")}`,
        cfg.material && `Material: ${cfg.material}`,
+       `Revestimiento: ${cfg.revestimiento === "premium" ? "Premium (aluminio anti-humedad)" : "Estándar"}`,
        cfg.ancho && cfg.alto && `Medidas: ${cfg.ancho} × ${cfg.alto} cm`,
        cfg.instalacion && cfg.localidad && `Instalación en ${cfg.localidad}`,
       ].filter(Boolean).join("\n")
@@ -154,6 +175,7 @@ export default function Configurador() {
     ["Ambiente", cfg.ambiente ? cfg.ambiente[0].toUpperCase() + cfg.ambiente.slice(1) : null],
     ["Tipo",     cfg.tipo ? TIPOS.find(t => t.value === cfg.tipo)?.label ?? null : null],
     ["Material", matLabel ?? null],
+    ["Revestimiento", cfg.revestimiento === "premium" ? "Premium · aluminio" : "Estándar"],
     ["Medidas",  cfg.ancho && cfg.alto ? `${cfg.ancho} × ${cfg.alto} cm` : null],
   ]
 
@@ -281,8 +303,39 @@ export default function Configurador() {
 
           <hr style={{ border: "none", borderTop: "1px solid rgba(0,0,0,0.08)", margin: "36px 0" }} />
 
-          {/* 04 Medidas */}
-          <StepHead n="04" label="Medidas del hueco (cm)" done={!!(cfg.ancho && cfg.alto)} />
+          {/* 04 Revestimiento */}
+          <StepHead n="04" label="Revestimiento" done />
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {REVESTIMIENTOS.map(r => {
+              const active = cfg.revestimiento === r.value
+              return (
+                <button key={r.value} onClick={() => setCfg(p => ({ ...p, revestimiento: r.value }))}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px",
+                    padding: "16px 18px", width: "100%", borderRadius: "4px", cursor: "pointer", textAlign: "left",
+                    background: active ? "#0a0a0a" : "#f7f5f2",
+                    border: active ? "1px solid #0a0a0a" : "1px solid #e0dcd5",
+                    transition: "background 0.2s, border-color 0.2s",
+                  }}>
+                  <div>
+                    <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.1rem, 2vw, 1.5rem)", fontWeight: 300, color: active ? "#f5f4f0" : "#1a1a1a", lineHeight: 1 }}>{r.label}</p>
+                    <p style={{ fontSize: "11px", color: active ? "rgba(255,255,255,0.6)" : "#888", marginTop: "5px", fontFamily: "var(--font-mono)", letterSpacing: "0.04em", lineHeight: 1.5, maxWidth: "280px" }}>{r.desc}</p>
+                  </div>
+                  <span style={{
+                    fontFamily: "var(--font-mono)", fontSize: "11px", fontWeight: 600, flexShrink: 0,
+                    padding: "4px 10px", borderRadius: "100px", letterSpacing: "0.04em",
+                    color: active ? "#0a0a0a" : (r.value === "premium" ? "#0a0a0a" : "#999"),
+                    background: active ? "#f5f4f0" : (r.value === "premium" ? "rgba(0,0,0,0.08)" : "transparent"),
+                  }}>{r.extra}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          <hr style={{ border: "none", borderTop: "1px solid rgba(0,0,0,0.08)", margin: "36px 0" }} />
+
+          {/* 05 Medidas */}
+          <StepHead n="05" label="Medidas del hueco (cm)" done={!!(cfg.ancho && cfg.alto)} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: "14px", alignItems: "end", maxWidth: "360px" }}>
             <Input label="Ancho" type="number" placeholder="ej: 80" value={cfg.ancho ?? ""} onChange={e => setCfg(p => ({ ...p, ancho: Number(e.target.value) || null }))} />
             <span style={{ paddingBottom: "12px", color: "#999", fontSize: "20px" }}>×</span>
@@ -294,8 +347,8 @@ export default function Configurador() {
 
           <hr style={{ border: "none", borderTop: "1px solid rgba(0,0,0,0.08)", margin: "36px 0" }} />
 
-          {/* 05 Instalación */}
-          <StepHead n="05" label="¿Necesitás instalación?" />
+          {/* 06 Instalación */}
+          <StepHead n="06" label="¿Necesitás instalación?" />
           <label style={{ display: "flex", alignItems: "flex-start", gap: "14px", cursor: "pointer", padding: "16px", background: "#f7f5f2", borderRadius: "4px", border: "1px solid #e0dcd5" }}>
             <input type="checkbox" checked={cfg.instalacion} onChange={e => setCfg(p => ({ ...p, instalacion: e.target.checked }))}
               style={{ marginTop: "2px", width: "16px", height: "16px", accentColor: "#0a0a0a", cursor: "pointer", flexShrink: 0 }} />
@@ -318,7 +371,7 @@ export default function Configurador() {
             {completo && precio.estandar && (
               <motion.div id="configurador-pago" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.35 }} style={{ overflow: "hidden" }}>
                 <hr style={{ border: "none", borderTop: "1px solid rgba(0,0,0,0.08)", margin: "36px 0" }} />
-                <StepHead n="06" label="Tus datos" done={!!nombre && !!email} />
+                <StepHead n="07" label="Tus datos" done={!!nombre && !!email} />
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
                   <Input label="Nombre y apellido" type="text" placeholder="Juan Pérez" value={nombre} onChange={e => setNombre(e.target.value)} />
                   <div className="contact-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>

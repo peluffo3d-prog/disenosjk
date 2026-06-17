@@ -1,4 +1,4 @@
-import type { ConfiguradorState, PrecioResult } from "@/types"
+import type { ConfiguradorState, PrecioResult, PrecioDB } from "@/types"
 
 // ─── TABLA DE PRECIOS (ARS) ───────────────────────────────────────────────────
 // TODO: reemplazar con precios reales cuando el cliente los confirme
@@ -18,6 +18,17 @@ const PRECIOS_PLEGABLE_DOBLE: [number, number, number][] = [
 
 // Instalación: porcentaje sobre precio de puerta (solo CABA + GBA)
 const INSTALACION_PORCENTAJE = 0.50
+
+// Premium: revestimiento de chapa de aluminio anti-humedad.
+// Recargo del 30% sobre el precio estándar de la puerta.
+// Premium = base × PREMIUM_UPLIFT. Se recalcula solo si cambian los precios base.
+export const PREMIUM_UPLIFT = 1.30
+
+// Aplica el recargo premium si corresponde. Redondea a miles para precios "lindos".
+function aplicarRevestimiento(precioBase: number, revestimiento: ConfiguradorState["revestimiento"]): number {
+  if (revestimiento !== "premium") return precioBase
+  return Math.round((precioBase * PREMIUM_UPLIFT) / 1000) * 1000
+}
 
 const ZONAS_CON_INSTALACION = [
   "caba", "buenos aires", "gba", "capital federal",
@@ -76,12 +87,15 @@ export function calcularPrecio(config: ConfiguradorState): PrecioResult {
     }
   }
 
+  // Recargo premium (aluminio anti-humedad) si corresponde
+  const precioPuerta = aplicarRevestimiento(precio, config.revestimiento)
+
   let precioInstalacion: number | null = null
 
   if (instalacion) {
     const tieneCobertura = localidadTieneInstalacion(localidad)
     if (tieneCobertura) {
-      precioInstalacion = Math.round(precio * INSTALACION_PORCENTAJE)
+      precioInstalacion = Math.round(precioPuerta * INSTALACION_PORCENTAJE)
     } else {
       // Instalación solicitada pero fuera de cobertura → igual muestra precio puerta,
       // pero avisa que instalación se coordina por WA
@@ -89,9 +103,9 @@ export function calcularPrecio(config: ConfiguradorState): PrecioResult {
     }
   }
 
-  const total = precio + (precioInstalacion ?? 0)
+  const total = precioPuerta + (precioInstalacion ?? 0)
 
-  return { puerta: precio, instalacion: precioInstalacion, total, estandar: true }
+  return { puerta: precioPuerta, instalacion: precioInstalacion, total, estandar: true }
 }
 
 export function fmtARS(n: number): string {
@@ -100,4 +114,71 @@ export function fmtARS(n: number): string {
     currency: "ARS",
     maximumFractionDigits: 0,
   }).format(n)
+}
+
+// Precio de entrada (medida más chica) para mostrar en catálogo/galería.
+// Si revestimiento="premium" devuelve el precio con el recargo de aluminio.
+export function getPrecioDesde(
+  tipo: "corredera_simple" | "plegable_doble",
+  revestimiento: ConfiguradorState["revestimiento"] = "estandar"
+): number {
+  const tabla = tipo === "corredera_simple" ? PRECIOS_CORREDERA_SIMPLE : PRECIOS_PLEGABLE_DOBLE
+  return aplicarRevestimiento(tabla[0][2], revestimiento)
+}
+
+// Valor de cada cuota sin interés (estilo MercadoLibre)
+export function fmtCuota(precio: number, cuotas = 6): string {
+  return fmtARS(Math.round(precio / cuotas))
+}
+
+// ─── Versión dinámica — usa filas de la DB en lugar de las constantes ─────────
+
+// Filas estáticas como fallback (mismos valores que las constantes hardcodeadas)
+export const STATIC_PRECIO_ROWS: PrecioDB[] = [
+  { id: "s1", tipo: "corredera_simple", ancho_max: 90,  alto: 220, precio: 150_000, activo: true, updated_at: "" },
+  { id: "s2", tipo: "corredera_simple", ancho_max: 120, alto: 220, precio: 185_000, activo: true, updated_at: "" },
+  { id: "s3", tipo: "corredera_simple", ancho_max: 150, alto: 220, precio: 220_000, activo: true, updated_at: "" },
+  { id: "s4", tipo: "plegable_doble",   ancho_max: 150, alto: 220, precio: 280_000, activo: true, updated_at: "" },
+  { id: "s5", tipo: "plegable_doble",   ancho_max: 200, alto: 220, precio: 340_000, activo: true, updated_at: "" },
+]
+
+export function getPrecioDesdeRows(
+  tipo: "corredera_simple" | "plegable_doble",
+  rows: PrecioDB[]
+): number {
+  const tipoRows = rows.filter(r => r.tipo === tipo && r.activo).sort((a, b) => a.ancho_max - b.ancho_max)
+  return tipoRows[0]?.precio ?? 0
+}
+
+export function calcularPrecioConRows(config: ConfiguradorState, rows: PrecioDB[]): PrecioResult {
+  const { tipo, ancho, alto, instalacion, localidad, revestimiento } = config
+
+  if (!tipo || !ancho || !alto) {
+    return { puerta: null, instalacion: null, total: null, estandar: false }
+  }
+  if (tipo === "otro") {
+    return { puerta: null, instalacion: null, total: null, estandar: false,
+      mensaje: "Este modelo necesita una cotización personalizada." }
+  }
+
+  const tipoRows = rows
+    .filter(r => r.tipo === tipo && r.activo)
+    .sort((a, b) => a.ancho_max - b.ancho_max)
+
+  const fila = tipoRows.find(r => ancho <= r.ancho_max)
+  if (!fila) {
+    return { puerta: null, instalacion: null, total: null, estandar: false,
+      mensaje: "Las medidas están fuera del rango estándar." }
+  }
+
+  // Precio de la puerta con el recargo premium aplicado si corresponde
+  const precioPuerta = aplicarRevestimiento(fila.precio, revestimiento)
+
+  let precioInstalacion: number | null = null
+  if (instalacion && localidadTieneInstalacion(localidad)) {
+    precioInstalacion = Math.round(precioPuerta * INSTALACION_PORCENTAJE)
+  }
+
+  const total = precioPuerta + (precioInstalacion ?? 0)
+  return { puerta: precioPuerta, instalacion: precioInstalacion, total, estandar: true }
 }

@@ -7,7 +7,10 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html  { scroll-behavior: smooth; }
+html  {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px; /* el nav fijo (60px) no tapa el título al saltar por anchor */
+}
 body  {
   font-family: var(--font-sans);
   background: #f5f4f0;
@@ -55,13 +58,27 @@ body  {
   .why-item:nth-last-child(-n+2) { border-bottom: none !important; }
 }
 
-/* ── Gallery: 2 cols → 1 col ── */
-@media (max-width: 640px) {
-  .gallery-grid {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto !important;
-  }
-  .gallery-grid > * { grid-row: auto !important; }
+/* ── Product slider — carrusel horizontal estilo ML ── */
+.product-slider {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 20px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+}
+.product-slider:active { cursor: grabbing; }
+.product-slider::-webkit-scrollbar { display: none; }
+.product-slider-item {
+  flex: 0 0 calc(33.33% - 14px);
+  scroll-snap-align: start;
+}
+@media (max-width: 900px) {
+  .product-slider-item { flex: 0 0 calc(50% - 10px); }
+}
+@media (max-width: 600px) {
+  .product-slider-item { flex: 0 0 calc(85%); }
 }
 
 /* ── Steps: 3 cols → 1 col ── */
@@ -141,3 +158,42 @@ body  {
 /* ── Dashboard ── */
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }
+
+/* ── Nav: underline animado en hover ── */
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 0; height: 1px;
+  background: currentColor;
+  transition: width 0.2s cubic-bezier(0.76, 0, 0.24, 1);
+}
+.nav-link:hover::after { width: 100%; }
+
+/* ── WA pill flotante: ocultar en mobile para no tapar la barra fija de precio
+      del configurador (el "Continuar →"). En mobile ya hay CTAs de WhatsApp en
+      el hero, el drawer, el B2B, el CTA final y el footer. ── */
+@media (max-width: 900px) {
+  .wa-pill { display: none !important; }
+}
+
+/* ── Press effect en mobile para todos los elementos interactivos ── */
+@media (hover: none) {
+  a:active, button:active {
+    transform: scale(0.97) !important;
+    transition: transform 0.08s ease !important;
+  }
+}
+
+/* ── Footer responsive ── */
+@media (max-width: 768px) {
+  .footer-grid { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 480px) {
+  .footer-grid { grid-template-columns: 1fr !important; }
+}

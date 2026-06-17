@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const {
       nombre, email, telefono,
-      ambiente, tipo, material,
+      ambiente, tipo, material, revestimiento,
       ancho, alto, instalacion, localidad,
       precio_puerta, precio_instalacion,
     } = body
@@ -20,10 +20,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 })
     }
 
+    const revLabel = revestimiento === "premium" ? " · Premium aluminio" : ""
+
     const items = [
       {
         id: `puerta-${tipo}`,
-        title: `Puerta ${tipo === "corredera_simple" ? "Corrediza Simple" : "Plegable Doble"} — ${material} (${ancho}×${alto}cm)`,
+        title: `Puerta ${tipo === "corredera_simple" ? "Corrediza Simple" : "Plegable Doble"} — ${material}${revLabel} (${ancho}×${alto}cm)`,
         quantity: 1,
         unit_price: precio_puerta,
         currency_id: "ARS",
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
     const supabase = await createSupabaseServerClient()
     await supabase.from("leads").insert({
       nombre, email, telefono,
-      ambiente, tipo, material,
+      ambiente, tipo, material, revestimiento: revestimiento ?? "estandar",
       ancho, alto, instalacion, localidad,
       precio_puerta, precio_instalacion: precio_instalacion ?? null,
       mp_preference_id: result.id,

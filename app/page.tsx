@@ -8,6 +8,7 @@ import Curtain from "@/components/Curtain"
 import SplitLines from "@/components/SplitLines"
 import ScaleImage from "@/components/ScaleImage"
 import SectionReveal from "@/components/SectionReveal"
+import { getPrecioDesde, fmtCuota, fmtARS } from "@/lib/precios"
 
 const DoorIntro = dynamic(() => import("@/components/DoorIntro"), { ssr: false })
 
@@ -22,7 +23,7 @@ const NAV_LINKS: [string, string][] = [["Catálogo", "#galeria"], ["Cómo funcio
 function DarkBg({ src, opacity = 0.35 }: { src: string; opacity?: number }) {
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-      <Image src={src} alt="" fill className="object-cover" style={{ opacity }} priority={false} />
+      <Image src={src} alt="" fill className="object-cover" style={{ opacity }} priority={false} sizes="100vw" />
       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.52)" }} />
     </div>
   )
@@ -33,12 +34,58 @@ function DarkRule({ my = 56 }: { my?: number }) {
   return <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.22)", margin: `${my}px 0` }} />
 }
 
-// ─── Label de galería ─────────────────────────────────────────────────────────
-function GLabel({ text }: { text: string }) {
+// ─── Card de modelo — igual tamaño, estilo MercadoLibre ──────────────────────
+function ProductCard({ img, alt, title, tag, tipo, premium = false }: {
+  img: string; alt: string; title: string; tag: string
+  tipo: "corredera_simple" | "plegable_doble"
+  premium?: boolean
+}) {
+  const desde = getPrecioDesde(tipo, premium ? "premium" : "estandar")
   return (
-    <div style={{ position: "absolute", bottom: "12px", left: "12px", padding: "6px 12px", background: "rgba(10,10,10,0.65)", borderRadius: "2px" }}>
-      <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#fff" }}>{text}</p>
-    </div>
+    <a href="#configurador" style={{
+      display: "flex", flexDirection: "column", height: "100%",
+      textDecoration: "none", color: "inherit",
+      background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: "4px",
+      overflow: "hidden",
+      transition: "border-color 0.25s, box-shadow 0.25s, transform 0.25s cubic-bezier(0.76,0,0.24,1)",
+    }}
+    onMouseEnter={e => {
+      e.currentTarget.style.borderColor = "rgba(0,0,0,0.18)"
+      e.currentTarget.style.boxShadow = "0 14px 36px rgba(0,0,0,0.09)"
+      e.currentTarget.style.transform = "translateY(-3px)"
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.borderColor = "rgba(0,0,0,0.08)"
+      e.currentTarget.style.boxShadow = "none"
+      e.currentTarget.style.transform = "translateY(0)"
+    }}>
+      <ScaleImage style={{ position: "relative", aspectRatio: "4/3" }}>
+        <Image src={img} alt={alt} fill className="object-cover" sizes="(max-width: 600px) 85vw, (max-width: 900px) 50vw, 33vw" />
+        {premium && (
+          <span style={{
+            position: "absolute", top: "12px", left: "12px", zIndex: 2,
+            fontFamily: "var(--font-mono)", fontSize: "9px", fontWeight: 600,
+            letterSpacing: "0.14em", textTransform: "uppercase",
+            color: "#0a0a0a", background: "#c9ccd1",
+            padding: "5px 10px", borderRadius: "100px",
+          }}>Premium · aluminio</span>
+        )}
+      </ScaleImage>
+      <div style={{ padding: "20px 22px 24px", flexShrink: 0 }}>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#999", marginBottom: "8px" }}>{tag}</p>
+        <p style={{ fontFamily: "var(--font-display)", fontSize: "1.6rem", fontWeight: 300, letterSpacing: "-0.01em", color: "#0a0a0a", marginBottom: "14px" }}>{title}</p>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.08em", textTransform: "uppercase", color: "#999", marginBottom: "2px" }}>Desde</p>
+        <p style={{ fontSize: "1.5rem", fontWeight: 700, color: "#0a0a0a", letterSpacing: "-0.01em", marginBottom: "4px" }}>{fmtARS(desde)}</p>
+        <p style={{ fontSize: "13px", fontWeight: 600, color: "#00a650" }}>en 6 cuotas de {fmtCuota(desde)} sin interés</p>
+        <span style={{
+          display: "inline-block", marginTop: "10px",
+          fontFamily: "var(--font-mono)", fontSize: "10px", fontWeight: 600,
+          letterSpacing: "0.06em", textTransform: "uppercase",
+          color: "#00a650", background: "rgba(0,166,80,0.1)",
+          padding: "4px 11px", borderRadius: "100px",
+        }}>Envío a todo el país</span>
+      </div>
+    </a>
   )
 }
 
@@ -46,7 +93,53 @@ function GLabel({ text }: { text: string }) {
 export default function Home() {
   const [waVisible, setWaVisible] = useState(false)
   const [menuOpen, setMenuOpen]   = useState(false)
-  const heroRef = useRef<HTMLElement>(null)
+  const heroRef   = useRef<HTMLElement>(null)
+  const sliderRef = useRef<HTMLDivElement>(null)
+
+  const scrollSlider = (dir: 1 | -1) => {
+    const el = sliderRef.current
+    if (!el) return
+    const item = el.querySelector<HTMLElement>(".product-slider-item")
+    const w = item ? item.offsetWidth + 20 : el.offsetWidth / 3
+    el.scrollBy({ left: dir * w, behavior: "smooth" })
+  }
+
+  // Drag-to-scroll estilo MercadoLibre: arrastrar con el mouse mueve el carrusel.
+  // Si el puntero se movió más que el umbral, cancelamos el click en la card.
+  useEffect(() => {
+    const el = sliderRef.current
+    if (!el) return
+    let down = false, startX = 0, startScroll = 0, moved = false
+    const DRAG_THRESHOLD = 6
+
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return // touch usa scroll nativo
+      down = true; moved = false
+      startX = e.clientX; startScroll = el.scrollLeft
+    }
+    const onMove = (e: PointerEvent) => {
+      if (!down) return
+      const dx = e.clientX - startX
+      if (!moved && Math.abs(dx) > DRAG_THRESHOLD) moved = true
+      if (moved) el.scrollLeft = startScroll - dx
+    }
+    const onUp = () => { down = false }
+    // Bloquea el click si fue un arrastre (no una intención de abrir la card)
+    const onClickCapture = (e: MouseEvent) => {
+      if (moved) { e.preventDefault(); e.stopPropagation(); moved = false }
+    }
+
+    el.addEventListener("pointerdown", onDown)
+    window.addEventListener("pointermove", onMove, { passive: true })
+    window.addEventListener("pointerup", onUp)
+    el.addEventListener("click", onClickCapture, true)
+    return () => {
+      el.removeEventListener("pointerdown", onDown)
+      window.removeEventListener("pointermove", onMove)
+      window.removeEventListener("pointerup", onUp)
+      el.removeEventListener("click", onClickCapture, true)
+    }
+  }, [])
 
   // Bloquea scroll cuando el menú mobile está abierto
   useEffect(() => {
@@ -69,6 +162,7 @@ export default function Home() {
       {/* ── WA pill — blanco, minimal, luxury ── */}
       <a href={WA_URL} target="_blank" rel="noopener noreferrer"
         aria-label="Cotizá por WhatsApp"
+        className="wa-pill"
         style={{
           position: "fixed", bottom: "28px", right: "28px", zIndex: 200,
           background: "#fff", color: "#0a0a0a",
@@ -97,9 +191,8 @@ export default function Home() {
         </span>
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
           {NAV_LINKS.map(([l, h]) => (
-            <a key={l} href={h} style={{
-              fontSize: "13px", fontWeight: 300, letterSpacing: "0.04em",
-              color: "#666", textDecoration: "none", transition: "color 0.15s",
+            <a key={l} href={h} className="nav-link" style={{
+              fontSize: "13px", fontWeight: 300, letterSpacing: "0.04em", color: "#666",
             }}
             onMouseEnter={e => (e.currentTarget.style.color = "#0a0a0a")}
             onMouseLeave={e => (e.currentTarget.style.color = "#666")}>{l}</a>
@@ -241,7 +334,7 @@ export default function Home() {
 
               {/* Stats */}
               <div className="hero-anim" style={{ animationDelay: "0.85s", display: "flex", gap: "clamp(24px, 4vw, 48px)", paddingTop: "clamp(20px, 3vh, 32px)", borderTop: "1px solid rgba(255,255,255,0.1)", flexWrap: "wrap" }}>
-                {[{ n: "+500", l: "Puertas instaladas" }, { n: "41K", l: "Seguidores en IG" }, { n: "6", l: "Cuotas sin interés" }].map(({ n, l }) => (
+                {[{ n: "+15.000", l: "Puertas vendidas" }, { n: "+6 años", l: "En el rubro" }, { n: "6", l: "Cuotas sin interés" }].map(({ n, l }) => (
                   <div key={l}>
                     <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 300, lineHeight: 1, color: "#f5f4f0" }}>{n}</p>
                     <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.45)", marginTop: "5px", letterSpacing: "0.02em" }}>{l}</p>
@@ -271,7 +364,7 @@ export default function Home() {
                 </p>
                 {[
                   { k: "Corte a medida", v: "Precisión ± 1 mm" },
-                  { k: "Materiales", v: "Melamina · MDF" },
+                  { k: "Material", v: "Melamina" },
                   { k: "Entrega", v: "7 a 15 días hábiles" },
                   { k: "Garantía", v: "12 meses" },
                 ].map((row, i, arr) => (
@@ -288,132 +381,123 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ── PARA EL RUBRO — sección B2B ── */}
-          <section style={{ position: "relative", color: "#f5f4f0", padding: "clamp(100px, 12vh, 140px) clamp(24px, 5vw, 56px)" }}>
-            <DarkBg src="/puerta-granero.webp" opacity={0.25} />
-            <div style={{ position: "relative", zIndex: 1 }}>
-
-              <div className="b2b-layout" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(48px, 6vw, 96px)", alignItems: "start" }}>
-
-                {/* Izquierda — pitch */}
-                <div>
-                  <Curtain>
-                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", marginBottom: "16px" }}>
-                      Para carpinteros · instaladores · constructoras
-                    </p>
-                  </Curtain>
-                  <SplitLines
-                    style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.8rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.02, marginBottom: "32px" }}
-                    baseDelay={0.05}
-                  >{"¿Trabajás\nen el rubro?"}</SplitLines>
-                  <Curtain delay={0.2}>
-                    <p style={{ fontSize: "15px", lineHeight: 1.8, color: "rgba(255,255,255,0.65)", maxWidth: "420px", marginBottom: "40px" }}>
-                      Somos fábrica. Eso significa que podés comprar al precio que ningún local te da,
-                      pedir el volumen que necesitás y recibir las puertas en obra, a medida exacta.
-                      Sin intermediarios, sin demoras de stock.
-                    </p>
-                  </Curtain>
-                  {/* Tabla de descuentos por volumen */}
-                  <Curtain delay={0.25}>
-                    <div style={{ marginBottom: "32px" }}>
-                      <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "14px" }}>
-                        Descuentos por volumen
-                      </p>
-                      <div style={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: "4px", overflow: "hidden" }}>
-                        {[
-                          { rango: "1–4 puertas",  desc: "Precio de lista",    badge: null },
-                          { rango: "5–9 puertas",  desc: "Precio mayorista",   badge: "−10%" },
-                          { rango: "10–19 puertas", desc: "Distribuidor",      badge: "−15%" },
-                          { rango: "20+ puertas",  desc: "Precio de fábrica",  badge: "−20%" },
-                        ].map((row, i) => (
-                          <div key={row.rango} style={{
-                            display: "flex", alignItems: "center", justifyContent: "space-between",
-                            padding: "13px 18px",
-                            background: i % 2 === 0 ? "rgba(255,255,255,0.03)" : "transparent",
-                            borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.07)" : "none",
-                          }}>
-                            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-                              <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "rgba(255,255,255,0.4)", minWidth: "90px" }}>{row.rango}</span>
-                              <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.75)", fontWeight: 300 }}>{row.desc}</span>
-                            </div>
-                            {row.badge && (
-                              <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", fontWeight: 600, color: "#f5f4f0", background: "rgba(255,255,255,0.12)", padding: "3px 10px", borderRadius: "100px", letterSpacing: "0.05em" }}>
-                                {row.badge}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <p style={{ marginTop: "10px", fontSize: "11px", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
-                        Descuentos sobre precio final. Contactanos para coordinar producción.
-                      </p>
-                    </div>
-                  </Curtain>
-
-                  <Curtain delay={0.3}>
-                    <a href={`${WA_URL.replace("quiero consultar", "soy del rubro y quiero consultar precio mayorista")}`}
-                      target="_blank" rel="noopener noreferrer"
-                      style={{ display: "inline-flex", alignItems: "center", gap: "10px", padding: "14px 28px", background: "#f5f4f0", color: "#0a0a0a", fontSize: "13px", fontWeight: 500, letterSpacing: "0.03em", textDecoration: "none", borderRadius: "3px", transition: "opacity 0.2s" }}
-                      onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-                      onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-                      Consultar precio mayorista →
-                    </a>
-                  </Curtain>
-                </div>
-
-                {/* Derecha — propuestas de valor */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
-                  {[
-                    { n: "01", title: "Precio de fábrica",      desc: "Comprás directo al fabricante. Sin pasar por distribuidor ni local. El margen es tuyo." },
-                    { n: "02", title: "Blanco para revendedores", desc: "Sin marca en la puerta. La vendés como tuya, la hacemos nosotros. Ideal para muebleros e instaladores." },
-                    { n: "03", title: "Pedidos en volumen",      desc: "Desde una unidad hasta stock para tu local. Coordinamos producción según tu obra o proyecto." },
-                    { n: "04", title: "Factura A disponible",    desc: "Trabajamos con personas y empresas. Emitimos factura A para constructoras y profesionales." },
-                  ].map((item, i) => (
-                    <Curtain key={item.n} delay={i * 0.08}>
-                      <div className="b2b-item" style={{ padding: "24px 0", borderBottom: "1px solid rgba(255,255,255,0.1)", transition: "padding-left 0.25s", cursor: "default" }}
-                        onMouseEnter={e => (e.currentTarget.style.paddingLeft = "12px")}
-                        onMouseLeave={e => (e.currentTarget.style.paddingLeft = "0")}>
-                        <div style={{ display: "flex", gap: "16px", alignItems: "baseline" }}>
-                          <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", flexShrink: 0 }}>{item.n}</span>
-                          <div>
-                            <p style={{ fontSize: "14px", fontWeight: 500, color: "#f5f4f0", marginBottom: "6px", lineHeight: 1.3 }}>{item.title}</p>
-                            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", lineHeight: 1.75 }}>{item.desc}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </Curtain>
+          {/* ── GALERÍA / CARRUSEL ── */}
+          <section id="galeria" style={{ background: "#f5f4f0", padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)" }}>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "40px" }}>
+              <div>
+                <Curtain>
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>
+                    Nuestros modelos
+                  </p>
+                </Curtain>
+                <SplitLines
+                  style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.5rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.05 }}
+                  baseDelay={0.05}
+                >{"Lo que construimos."}</SplitLines>
+              </div>
+              <Curtain delay={0.3}>
+                <div style={{ display: "flex", gap: "8px", paddingBottom: "6px" }}>
+                  {([-1, 1] as const).map(dir => (
+                    <button key={dir} onClick={() => scrollSlider(dir)}
+                      aria-label={dir === -1 ? "Anterior" : "Siguiente"}
+                      style={{
+                        width: "40px", height: "40px", borderRadius: "50%",
+                        border: "1px solid rgba(0,0,0,0.12)", background: "transparent",
+                        cursor: "pointer", fontSize: "14px", color: "#0a0a0a",
+                        transition: "background 0.15s, color 0.15s, border-color 0.15s",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "#0a0a0a"; e.currentTarget.style.color = "#f5f4f0"; e.currentTarget.style.borderColor = "#0a0a0a" }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#0a0a0a"; e.currentTarget.style.borderColor = "rgba(0,0,0,0.12)" }}
+                    >{dir === -1 ? "←" : "→"}</button>
                   ))}
                 </div>
-
-              </div>
+              </Curtain>
             </div>
+
+            <Curtain>
+              <div className="product-slider" ref={sliderRef}>
+                {[
+                  { img: "/puerta-granero.webp",  alt: "Puerta estilo granero",            title: "Estilo granero",           tag: "Corrediza simple · Living",          tipo: "corredera_simple" as const, premium: false },
+                  { img: "/puerta-granero.webp",  alt: "Puerta estilo granero premium",    title: "Estilo granero Premium",   tag: "Aluminio anti-humedad · Living",     tipo: "corredera_simple" as const, premium: true  },
+                  { img: "/puerta-blanca.webp",   alt: "Puerta corrediza blanca",          title: "Lisa blanca",              tag: "Corrediza simple · Dormitorio",      tipo: "corredera_simple" as const, premium: false },
+                  { img: "/puerta-blanca.webp",   alt: "Puerta corrediza blanca premium",  title: "Lisa blanca Premium",      tag: "Aluminio anti-humedad · Baño",       tipo: "corredera_simple" as const, premium: true  },
+                  { img: "/puerta-producto.webp", alt: "Modelo de puerta plegable",        title: "Plegable doble",           tag: "Plegable doble · Ambientes amplios", tipo: "plegable_doble"   as const, premium: false },
+                  { img: "/puerta-producto.webp", alt: "Modelo de puerta plegable premium",title: "Plegable doble Premium",   tag: "Aluminio anti-humedad · Amplios",    tipo: "plegable_doble"   as const, premium: true  },
+                ].map(p => (
+                  <div key={p.title} className="product-slider-item">
+                    <ProductCard {...p} />
+                  </div>
+                ))}
+              </div>
+            </Curtain>
           </section>
 
-          {/* ── GALERÍA ── */}
-          <section id="galeria" style={{ background: "#f5f4f0", padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)" }}>
-            <Curtain>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>
-                Nuestros modelos
-              </p>
-            </Curtain>
-            <SplitLines
-              style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.5rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.05, marginBottom: "40px" }}
-              baseDelay={0.05}
-            >{"Lo que construimos."}</SplitLines>
+          {/* ── TESTIMONIOS — social proof antes de convertir ── */}
+          <section style={{ background: "#0a0a0a", padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)" }}>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "24px", marginBottom: "clamp(48px, 7vh, 72px)" }}>
+              <div>
+                <Curtain>
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "16px" }}>Lo que dicen nuestros clientes</p>
+                </Curtain>
+                <SplitLines
+                  style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3rem, 6vw, 5.5rem)", fontWeight: 200, letterSpacing: "-0.025em", lineHeight: 1, color: "#f5f4f0" }}
+                  baseDelay={0.05}
+                >{"15.000 hogares\ntransformados."}</SplitLines>
+              </div>
+              <Curtain delay={0.3}>
+                <div style={{ display: "flex", gap: "6px", alignItems: "center", paddingBottom: "8px" }}>
+                  {"★★★★★".split("").map((s, i) => (
+                    <span key={i} style={{ color: "#f5c842", fontSize: "22px", lineHeight: 1 }}>{s}</span>
+                  ))}
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "rgba(255,255,255,0.45)", marginLeft: "10px", letterSpacing: "0.06em" }}>5/5 promedio</span>
+                </div>
+              </Curtain>
+            </div>
 
-            <div className="gallery-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gridTemplateRows: "auto auto", gap: "8px" }}>
-              <ScaleImage style={{ gridRow: "1 / 3", position: "relative", aspectRatio: "3/4" }}>
-                <Image src="/puerta-granero.webp" alt="Puerta estilo granero" fill className="object-cover" style={{ borderRadius: "3px" }} />
-                <GLabel text="Estilo granero · Living" />
-              </ScaleImage>
-              <ScaleImage style={{ position: "relative", aspectRatio: "4/3" }}>
-                <Image src="/puerta-blanca.webp" alt="Puerta corrediza blanca" fill className="object-cover" style={{ borderRadius: "3px" }} />
-                <GLabel text="Lisa blanca · Dormitorio" />
-              </ScaleImage>
-              <ScaleImage style={{ position: "relative", aspectRatio: "4/3" }}>
-                <Image src="/puerta-producto.webp" alt="Modelo de puerta" fill className="object-cover object-center" style={{ borderRadius: "3px" }} />
-                <GLabel text="Modelo estándar" />
-              </ScaleImage>
+            <div className="testimonios-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2px" }}>
+              {[
+                { texto: "Excelente calidad. La puerta quedó perfecta en el baño, exactamente a medida. La instalación fue rápida y limpia.", nombre: "Valeria M.", lugar: "Morón, GBA Oeste", inicial: "V" },
+                { texto: "Pagué en cuotas y me ahorraron la obra completa. No sabía que era tan fácil. Me mandaron fotos de todo el proceso.", nombre: "Lucas T.", lugar: "Palermo, CABA", inicial: "L" },
+                { texto: "Vine por Instagram y no me arrepiento. Precio justo y resultado increíble. Los recomiendo 100%.", nombre: "Sofía R.", lugar: "La Matanza, GBA", inicial: "S" },
+              ].map((t, i) => (
+                <Curtain key={t.nombre} delay={i * 0.12}>
+                  <div style={{
+                    padding: "clamp(28px, 4vw, 44px)",
+                    background: i === 1 ? "#f5f4f0" : "#111",
+                    height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "32px",
+                    minHeight: "280px",
+                  }}>
+                    <div>
+                      <div style={{ display: "flex", gap: "3px", marginBottom: "20px" }}>
+                        {"★★★★★".split("").map((s, j) => (
+                          <span key={j} style={{ color: i === 1 ? "#c8a800" : "#f5c842", fontSize: "14px" }}>{s}</span>
+                        ))}
+                      </div>
+                      <p style={{
+                        fontFamily: "var(--font-display)", fontSize: "clamp(1.1rem, 2vw, 1.35rem)",
+                        fontWeight: 300, fontStyle: "italic", lineHeight: 1.65,
+                        color: i === 1 ? "#222" : "rgba(255,255,255,0.82)",
+                        letterSpacing: "-0.01em",
+                      }}>
+                        &ldquo;{t.texto}&rdquo;
+                      </p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                      <div style={{
+                        width: "38px", height: "38px", borderRadius: "50%", flexShrink: 0,
+                        background: i === 1 ? "#0a0a0a" : "#f5f4f0",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <span style={{ fontFamily: "var(--font-display)", fontSize: "16px", fontWeight: 500, color: i === 1 ? "#f5f4f0" : "#0a0a0a" }}>{t.inicial}</span>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: "13px", fontWeight: 600, color: i === 1 ? "#0a0a0a" : "#f5f4f0", letterSpacing: "0.01em" }}>{t.nombre}</p>
+                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: i === 1 ? "#666" : "rgba(255,255,255,0.4)", marginTop: "3px", letterSpacing: "0.06em" }}>{t.lugar}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Curtain>
+              ))}
             </div>
           </section>
 
@@ -504,31 +588,104 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ── TESTIMONIOS ── */}
-          <section style={{ background: "#f5f4f0", padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)" }}>
-            <Curtain>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>Clientes</p>
-            </Curtain>
-            {/* Heading grande — impacto máximo */}
-            <SplitLines
-              style={{ fontFamily: "var(--font-display)", fontSize: "clamp(56px, 7vw, 96px)", fontWeight: 200, letterSpacing: "-0.025em", lineHeight: 1, marginBottom: "56px" }}
-              baseDelay={0.05}
-            >{"500 hogares\ntransformados."}</SplitLines>
+          {/* ── PARA EL RUBRO — sección B2B ── */}
+          <section style={{ position: "relative", color: "#f5f4f0", padding: "clamp(100px, 12vh, 140px) clamp(24px, 5vw, 56px)" }}>
+            <DarkBg src="/puerta-granero.webp" opacity={0.25} />
+            <div style={{ position: "relative", zIndex: 1 }}>
 
-            <div className="testimonios-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
-              {[
-                { texto: '"Excelente calidad. La puerta quedó perfecta en el baño, exactamente a medida. La instalación fue rápida y limpia."', nombre: "Valeria M.", lugar: "Morón, GBA Oeste" },
-                { texto: '"Pagué en cuotas y me ahorraron la obra completa. No sabía que era tan fácil. Me mandaron fotos de todo el proceso."', nombre: "Lucas T.", lugar: "Palermo, CABA" },
-                { texto: '"Vine por Instagram y no me arrepiento. Precio justo y resultado increíble. Los recomiendo 100%."', nombre: "Sofía R.", lugar: "La Matanza, GBA" },
-              ].map((t, i) => (
-                <Curtain key={t.nombre} delay={i * 0.1}>
-                  <div style={{ padding: "28px 24px", background: "#ece9e3", borderRadius: "3px", height: "100%" }}>
-                    <p style={{ fontSize: "18px", lineHeight: 1.6, color: "#555", marginBottom: "24px", fontFamily: "var(--font-display)", fontWeight: 300, fontStyle: "italic", letterSpacing: "-0.01em" }}>{t.texto}</p>
-                    <p style={{ fontSize: "12px", fontWeight: 500, color: "#0a0a0a", letterSpacing: "0.02em" }}>{t.nombre}</p>
-                    <p style={{ fontSize: "11px", color: "#666", marginTop: "3px" }}>{t.lugar}</p>
-                  </div>
-                </Curtain>
-              ))}
+              <div className="b2b-layout" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(48px, 6vw, 96px)", alignItems: "start" }}>
+
+                {/* Izquierda — pitch */}
+                <div>
+                  <Curtain>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", marginBottom: "16px" }}>
+                      Para carpinteros · instaladores · constructoras
+                    </p>
+                  </Curtain>
+                  <SplitLines
+                    style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.8rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.02, marginBottom: "32px" }}
+                    baseDelay={0.05}
+                  >{"¿Trabajás\nen el rubro?"}</SplitLines>
+                  <Curtain delay={0.2}>
+                    <p style={{ fontSize: "15px", lineHeight: 1.8, color: "rgba(255,255,255,0.65)", maxWidth: "420px", marginBottom: "40px" }}>
+                      Somos fábrica. Eso significa que podés comprar al precio que ningún local te da,
+                      pedir el volumen que necesitás y recibir las puertas en obra, a medida exacta.
+                      Sin intermediarios, sin demoras de stock.
+                    </p>
+                  </Curtain>
+                  {/* Tabla de descuentos por volumen */}
+                  <Curtain delay={0.25}>
+                    <div style={{ marginBottom: "32px" }}>
+                      <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "14px" }}>
+                        Descuentos por volumen
+                      </p>
+                      <div style={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: "4px", overflow: "hidden" }}>
+                        {[
+                          { rango: "1–4 puertas",   desc: "Precio de lista",   badge: null },
+                          { rango: "5–9 puertas",   desc: "Precio mayorista",  badge: "−5%" },
+                          { rango: "10–19 puertas", desc: "Distribuidor",      badge: "−8%" },
+                          { rango: "20+ puertas",   desc: "Precio de fábrica", badge: "−10%" },
+                        ].map((row, i) => (
+                          <div key={row.rango} style={{
+                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                            padding: "13px 18px",
+                            background: i % 2 === 0 ? "rgba(255,255,255,0.03)" : "transparent",
+                            borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.07)" : "none",
+                          }}>
+                            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                              <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "rgba(255,255,255,0.4)", minWidth: "90px" }}>{row.rango}</span>
+                              <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.75)", fontWeight: 300 }}>{row.desc}</span>
+                            </div>
+                            {row.badge && (
+                              <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", fontWeight: 600, color: "#f5f4f0", background: "rgba(255,255,255,0.12)", padding: "3px 10px", borderRadius: "100px", letterSpacing: "0.05em" }}>
+                                {row.badge}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <p style={{ marginTop: "10px", fontSize: "11px", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
+                        Descuentos sobre precio final. Contactanos para coordinar producción.
+                      </p>
+                    </div>
+                  </Curtain>
+
+                  <Curtain delay={0.3}>
+                    <a href={`${WA_URL.replace("quiero consultar", "soy del rubro y quiero consultar precio mayorista")}`}
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ display: "inline-flex", alignItems: "center", gap: "10px", padding: "14px 28px", background: "#f5f4f0", color: "#0a0a0a", fontSize: "13px", fontWeight: 500, letterSpacing: "0.03em", textDecoration: "none", borderRadius: "3px", transition: "opacity 0.2s" }}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+                      Consultar precio mayorista →
+                    </a>
+                  </Curtain>
+                </div>
+
+                {/* Derecha — propuestas de valor */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+                  {[
+                    { n: "01", title: "Precio de fábrica",      desc: "Comprás directo al fabricante. Sin pasar por distribuidor ni local. El margen es tuyo." },
+                    { n: "02", title: "Blanco para revendedores", desc: "Sin marca en la puerta. La vendés como tuya, la hacemos nosotros. Ideal para muebleros e instaladores." },
+                    { n: "03", title: "Pedidos en volumen",      desc: "Desde una unidad hasta stock para tu local. Coordinamos producción según tu obra o proyecto." },
+                    { n: "04", title: "Factura A disponible",    desc: "Trabajamos con personas y empresas. Emitimos factura A para constructoras y profesionales." },
+                  ].map((item, i) => (
+                    <Curtain key={item.n} delay={i * 0.08}>
+                      <div className="b2b-item" style={{ padding: "24px 0", borderBottom: "1px solid rgba(255,255,255,0.1)", transition: "padding-left 0.25s", cursor: "default" }}
+                        onMouseEnter={e => (e.currentTarget.style.paddingLeft = "12px")}
+                        onMouseLeave={e => (e.currentTarget.style.paddingLeft = "0")}>
+                        <div style={{ display: "flex", gap: "16px", alignItems: "baseline" }}>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", flexShrink: 0 }}>{item.n}</span>
+                          <div>
+                            <p style={{ fontSize: "14px", fontWeight: 500, color: "#f5f4f0", marginBottom: "6px", lineHeight: 1.3 }}>{item.title}</p>
+                            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", lineHeight: 1.75 }}>{item.desc}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </Curtain>
+                  ))}
+                </div>
+
+              </div>
             </div>
           </section>
 
@@ -579,16 +736,68 @@ export default function Home() {
           </section>
 
           {/* ── FOOTER ── */}
-          <footer style={{ background: "#0a0a0a", borderTop: "1px solid #1a1a1a", padding: "20px clamp(24px, 5vw, 56px)", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
-            <span style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: 300, color: "#f5f4f0", letterSpacing: "0.02em" }}>Diseños JK</span>
-            <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#333" }}>CABA y GBA · Fabricantes directos</p>
-            <div style={{ display: "flex", gap: "20px" }}>
-              {[["Instagram", IG_URL], ["WhatsApp", WA_URL]].map(([l, h]) => (
-                <a key={l} href={h} target="_blank" rel="noopener noreferrer"
-                  style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#444", textDecoration: "none", transition: "color 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "#888")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "#444")}>{l}</a>
-              ))}
+          <footer style={{ background: "#0a0a0a", borderTop: "1px solid #1a1a1a" }}>
+            {/* Cuerpo */}
+            <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: "clamp(32px, 5vw, 64px)", padding: "clamp(48px, 7vh, 80px) clamp(24px, 5vw, 56px)" }}>
+
+              {/* Columna 1 — marca */}
+              <div>
+                <p style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.8rem, 3vw, 2.4rem)", fontWeight: 300, color: "#f5f4f0", letterSpacing: "0.01em", marginBottom: "14px" }}>Diseños JK</p>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#444", lineHeight: 1.8, marginBottom: "24px" }}>
+                  Fabricantes directos de puertas<br />corredizas y plegables a medida.<br />San Justo, Buenos Aires.
+                </p>
+                <div style={{ display: "flex", gap: "14px" }}>
+                  {[["Instagram", IG_URL], ["WhatsApp", WA_URL]].map(([l, h]) => (
+                    <a key={l} href={h} target="_blank" rel="noopener noreferrer"
+                      className="nav-link"
+                      style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#555" }}
+                      onMouseEnter={e => (e.currentTarget.style.color = "#999")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "#555")}>{l}</a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Columna 2 — links */}
+              <div>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#444", marginBottom: "20px" }}>Navegar</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {[...NAV_LINKS, ["Ingresar", "/login"]].map(([l, h]) => (
+                    <a key={l} href={h}
+                      className="nav-link"
+                      style={{ fontSize: "13px", fontWeight: 300, color: "#666", letterSpacing: "0.01em" }}
+                      onMouseEnter={e => (e.currentTarget.style.color = "#f5f4f0")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "#666")}>
+                      {l}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Columna 3 — contacto */}
+              <div>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#444", marginBottom: "20px" }}>Contacto</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                  <div>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#444", marginBottom: "6px" }}>Dirección</p>
+                    <p style={{ fontSize: "13px", fontWeight: 300, color: "#666", lineHeight: 1.7 }}>Venezuela y Arieta<br />San Justo, La Matanza</p>
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#444", marginBottom: "6px" }}>Horario</p>
+                    <p style={{ fontSize: "13px", fontWeight: 300, color: "#666", lineHeight: 1.7 }}>Lun–Vie · 9 a 19 hs<br />Sáb · 9 a 15 hs</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Barra inferior */}
+            <div style={{ borderTop: "1px solid #1a1a1a", padding: "16px clamp(24px, 5vw, 56px)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#333" }}>
+                © 2026 Diseños JK · CABA y GBA
+              </p>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#2a2a2a" }}>
+                Fabricantes directos · Hecho en San Justo
+              </p>
             </div>
           </footer>
 

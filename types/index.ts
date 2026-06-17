@@ -1,11 +1,14 @@
 export type Ambiente = "baño" | "dormitorio" | "living" | "otro"
 export type TipoPuerta = "corredera_simple" | "plegable_doble" | "otro"
 export type Material = "blanco" | "madera" | "negro" | "otro"
+// Revestimiento: estándar (melamina) o premium (chapa de aluminio anti-humedad)
+export type Revestimiento = "estandar" | "premium"
 
 export interface ConfiguradorState {
   ambiente: Ambiente | null
   tipo: TipoPuerta | null
   material: Material | null
+  revestimiento: Revestimiento
   ancho: number | null   // cm
   alto: number | null    // cm
   instalacion: boolean
@@ -20,6 +23,16 @@ export interface PrecioResult {
   mensaje?: string            // si estandar=false
 }
 
+export interface PrecioDB {
+  id: string
+  tipo: "corredera_simple" | "plegable_doble"
+  ancho_max: number
+  alto: number
+  precio: number
+  activo: boolean
+  updated_at: string
+}
+
 export interface Lead {
   id: string
   created_at: string
@@ -29,6 +42,7 @@ export interface Lead {
   ambiente: Ambiente
   tipo: TipoPuerta
   material: Material
+  revestimiento: Revestimiento
   ancho: number
   alto: number
   instalacion: boolean

@@ -2,7 +2,8 @@ export const dynamic = "force-dynamic"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import DashboardClient from "./DashboardClient"
-import type { Lead } from "@/types"
+import type { Lead, PrecioDB } from "@/types"
+import { STATIC_PRECIO_ROWS } from "@/lib/precios"
 
 export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient()
@@ -24,9 +25,10 @@ export default async function DashboardPage() {
   startOfMonth.setDate(1)
   startOfMonth.setHours(0, 0, 0, 0)
 
-  const [{ data: leadsAll }, { data: leadsMes }] = await Promise.all([
+  const [{ data: leadsAll }, { data: leadsMes }, { data: preciosData }] = await Promise.all([
     supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(50),
     supabase.from("leads").select("*").gte("created_at", startOfMonth.toISOString()),
+    supabase.from("precios").select("*").eq("activo", true).order("tipo").order("ancho_max"),
   ])
 
   const pagadosMes = (leadsMes ?? []).filter(l => l.status === "pagado")
@@ -37,6 +39,7 @@ export default async function DashboardPage() {
   return (
     <DashboardClient
       leads={leadsAll as Lead[] ?? []}
+      precios={(preciosData as PrecioDB[] | null) ?? STATIC_PRECIO_ROWS}
       stats={{
         leadsMes: leadsMes?.length ?? 0,
         ventasMes: pagadosMes.length,
