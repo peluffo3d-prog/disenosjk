@@ -72,6 +72,16 @@ const IcoInbox = ({ size = 40 }: IconProps) => (
     <path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
   </svg>
 )
+const IcoHome = ({ size = 17 }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><path d="M9 22V12h6v10" />
+  </svg>
+)
+const IcoTag = ({ size = 17 }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><circle cx="7" cy="7" r="1.1" fill="currentColor" stroke="none" />
+  </svg>
+)
 
 // ─── Tarjeta KPI ──────────────────────────────────────────────────────────────
 function KPI({ icon, value, label, hint, accent = C.ink, progress }: {
@@ -156,48 +166,68 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
   const hayActividad = actividad.some(a => a.n > 0)
 
   return (
-    <div style={{ minHeight: "100vh", background: C.canvas, fontFamily: "var(--font-sans)", color: C.ink }}>
+    <div className="dash-shell" style={{ minHeight: "100vh", background: C.canvas, fontFamily: "var(--font-sans)", color: C.ink }}>
 
-      {/* ── Top bar ── */}
-      <header style={{
-        background: C.card, borderBottom: `1px solid ${C.border}`,
-        padding: "16px clamp(20px, 4vw, 40px)",
-        display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <div>
-            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "1.5rem", fontWeight: 500, lineHeight: 1 }}>Diseños JK</h1>
-            <p style={{ fontSize: "12px", color: C.muted, marginTop: "3px" }}>Panel de control · {MES}</p>
-          </div>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "100px", background: "rgba(10,143,79,0.1)" }}>
-            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: C.green, boxShadow: `0 0 0 0 ${C.green}`, animation: "pulse 2s infinite" }} />
-            <span style={{ fontSize: "11px", fontWeight: 600, color: C.green }}>En vivo</span>
-          </span>
+      {/* ── Sidebar oscuro ── */}
+      <aside className="dash-sidebar">
+        <div className="dash-brand">
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", fontWeight: 500, color: "#f5f4f0", lineHeight: 1 }}>Diseños JK</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.16em", textTransform: "uppercase", color: "#7c766a", marginTop: "7px" }}>Panel de control</span>
         </div>
-        <a href="/api/auth/logout"
-          style={{ fontSize: "13px", fontWeight: 500, color: C.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 14px", border: `1px solid ${C.border}`, borderRadius: "8px", transition: "color 0.15s, border-color 0.15s" }}
-          onMouseEnter={e => { e.currentTarget.style.color = C.ink; e.currentTarget.style.borderColor = C.ink }}
-          onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border }}>
-          Salir →
-        </a>
-      </header>
 
-      {/* ── Tabs ── */}
-      <div style={{ background: C.card, borderBottom: `1px solid ${C.border}`, padding: "0 clamp(20px, 4vw, 40px)", display: "flex", gap: "4px" }}>
-        {([["leads", "Resumen y leads"], ["precios", "Precios"]] as [Tab, string][]).map(([t, label]) => (
-          <button key={t} onClick={() => setTab(t)}
-            style={{
-              fontSize: "13px", fontWeight: 600, padding: "14px 16px", border: "none", background: "transparent", cursor: "pointer",
-              color: tab === t ? C.ink : C.faint,
-              borderBottom: `2px solid ${tab === t ? C.ink : "transparent"}`,
-              marginBottom: "-1px", transition: "color 0.15s",
-            }}>
-            {label}
-          </button>
-        ))}
-      </div>
+        <nav className="dash-nav">
+          {([["leads", "Resumen y leads", <IcoHome key="h" />], ["precios", "Precios", <IcoTag key="t" />]] as [Tab, string, React.ReactNode][]).map(([id, label, icon]) => {
+            const active = tab === id
+            return (
+              <button key={id} onClick={() => setTab(id)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "11px",
+                  padding: "11px 13px", borderRadius: "9px", border: "none", cursor: "pointer", width: "100%", textAlign: "left",
+                  fontSize: "13.5px", fontWeight: 500, whiteSpace: "nowrap",
+                  background: active ? "rgba(245,244,240,0.12)" : "transparent",
+                  color: active ? "#f5f4f0" : "#9b9488",
+                  transition: "background 0.15s, color 0.15s",
+                }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = "rgba(245,244,240,0.06)"; e.currentTarget.style.color = "#d8d3c8" } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#9b9488" } }}>
+                <span style={{ color: active ? "#f5f4f0" : "#7c766a", display: "flex" }}>{icon}</span>
+                {label}
+              </button>
+            )
+          })}
+        </nav>
 
-      <main style={{ padding: "clamp(20px, 3.5vw, 36px) clamp(20px, 4vw, 40px)", maxWidth: "1240px", margin: "0 auto" }}>
+        <div className="dash-account">
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+            <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "#f5f4f0", color: "#16140f", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "15px", flexShrink: 0 }}>A</div>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: "12.5px", fontWeight: 600, color: "#f5f4f0", lineHeight: 1.2 }}>Administrador</p>
+              <p style={{ fontSize: "11px", color: "#7c766a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>admin@disenosjk.com</p>
+            </div>
+          </div>
+          <a href="/api/auth/logout"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", fontSize: "12.5px", fontWeight: 500, color: "#c9c3b6", textDecoration: "none", padding: "9px", border: "1px solid rgba(245,244,240,0.14)", borderRadius: "8px", transition: "background 0.15s" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(245,244,240,0.08)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+            Cerrar sesión →
+          </a>
+        </div>
+      </aside>
+
+      {/* ── Contenido ── */}
+      <div className="dash-content">
+        <header className="dash-topbar">
+          <div>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "1.7rem", fontWeight: 500, lineHeight: 1 }}>{tab === "leads" ? "Resumen y leads" : "Precios"}</h1>
+            <p style={{ fontSize: "12.5px", color: C.muted, marginTop: "4px", textTransform: tab === "leads" ? "none" : "none" }}>{tab === "leads" ? `Tu negocio en ${MES}` : "Configurá los precios de venta"}</p>
+          </div>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "6px 12px", borderRadius: "100px", background: "rgba(10,143,79,0.1)", border: "1px solid rgba(10,143,79,0.2)" }}>
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: C.green, animation: "pulse 2s infinite" }} />
+            <span style={{ fontSize: "11.5px", fontWeight: 600, color: C.green }}>En vivo</span>
+          </span>
+        </header>
+
+        <main style={{ padding: "clamp(20px, 3vw, 32px) clamp(18px, 3.2vw, 40px)", maxWidth: "1180px" }}>
 
         {/* ── TAB LEADS ── */}
         {tab === "leads" && (
@@ -393,9 +423,39 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
             </div>
           </div>
         )}
-      </main>
+        </main>
+      </div>
 
-      <style>{`@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(10,143,79,0.5) } 70% { box-shadow: 0 0 0 6px rgba(10,143,79,0) } 100% { box-shadow: 0 0 0 0 rgba(10,143,79,0) } }`}</style>
+      <style>{`
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(10,143,79,0.5) } 70% { box-shadow: 0 0 0 6px rgba(10,143,79,0) } 100% { box-shadow: 0 0 0 0 rgba(10,143,79,0) } }
+        .dash-shell { display: flex; }
+        .dash-sidebar {
+          position: fixed; top: 0; left: 0; bottom: 0; width: 250px; z-index: 20;
+          background: #16140f; display: flex; flex-direction: column; gap: 8px;
+          padding: 24px 16px; overflow-y: auto;
+        }
+        .dash-brand { display: flex; flex-direction: column; padding: 6px 12px 20px; }
+        .dash-nav { display: flex; flex-direction: column; gap: 4px; }
+        .dash-account { margin-top: auto; padding-top: 18px; border-top: 1px solid rgba(245,244,240,0.1); }
+        .dash-content { margin-left: 250px; flex: 1; min-width: 0; }
+        .dash-topbar {
+          background: ${C.card}; border-bottom: 1px solid ${C.border};
+          padding: 18px clamp(18px, 3.2vw, 40px);
+          display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+        }
+        @media (max-width: 820px) {
+          .dash-shell { flex-direction: column; }
+          .dash-sidebar {
+            position: sticky; top: 0; width: auto; flex-direction: row; align-items: center;
+            gap: 6px; padding: 10px 14px;
+          }
+          .dash-brand { display: none; }
+          .dash-nav { flex-direction: row; flex: 1; }
+          .dash-account { margin-top: 0; padding-top: 0; border-top: none; }
+          .dash-account > div:first-child { display: none; }
+          .dash-content { margin-left: 0; }
+        }
+      `}</style>
     </div>
   )
 }
