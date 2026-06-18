@@ -26,15 +26,17 @@ const MES = MES_RAW.charAt(0).toUpperCase() + MES_RAW.slice(1) // "Junio de 2026
 
 // ─── Paleta ───────────────────────────────────────────────────────────────────
 const C = {
-  canvas: "#f4f2ee",
+  canvas: "#e8e5dd",                  // fondo más marcado → las tarjetas blancas resaltan
   card:   "#ffffff",
-  border: "#e7e4dd",
+  border: "#d6d1c6",                  // borde más visible
   ink:    "#0a0a0a",
-  muted:  "#8a8578",
-  faint:  "#b5afa3",
+  muted:  "#56524a",                  // texto secundario legible (antes casi gris claro)
+  faint:  "#7d776b",                  // texto chico, ahora distinguible
   green:  "#0a8f4f",
-  amber:  "#c4870c",
+  amber:  "#b87708",
   red:    "#d33a2c",
+  shadow: "0 1px 2px rgba(20,18,12,0.06), 0 8px 20px rgba(20,18,12,0.05)",
+  shadowHover: "0 12px 34px rgba(20,18,12,0.1)",
 }
 
 const STATUS: Record<Lead["status"], { label: string; color: string; bg: string }> = {
@@ -81,23 +83,23 @@ function KPI({ icon, value, label, hint, accent = C.ink, progress }: {
       style={{
         background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px",
         padding: "22px 22px 20px", display: "flex", flexDirection: "column", gap: "14px",
-        transition: "box-shadow 0.2s, transform 0.2s", cursor: "default",
+        boxShadow: C.shadow, transition: "box-shadow 0.2s, transform 0.2s", cursor: "default",
       }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "translateY(-2px)" }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)" }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = C.shadowHover; e.currentTarget.style.transform = "translateY(-2px)" }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = C.shadow; e.currentTarget.style.transform = "translateY(0)" }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{
-          width: "36px", height: "36px", borderRadius: "9px", display: "flex", alignItems: "center", justifyContent: "center",
-          background: `${accent}14`, color: accent,
+          width: "38px", height: "38px", borderRadius: "9px", display: "flex", alignItems: "center", justifyContent: "center",
+          background: `${accent}1f`, color: accent,
         }}>{icon}</div>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: C.faint }}>Este mes</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted, fontWeight: 500 }}>Este mes</span>
       </div>
 
       <div>
-        <p style={{ fontFamily: "var(--font-display)", fontSize: "2.6rem", fontWeight: 400, lineHeight: 1, color: C.ink, letterSpacing: "-0.02em" }}>{value}</p>
-        <p style={{ fontSize: "13px", fontWeight: 600, color: C.ink, marginTop: "10px" }}>{label}</p>
-        <p style={{ fontSize: "12px", color: C.muted, marginTop: "2px", lineHeight: 1.4 }}>{hint}</p>
+        <p style={{ fontFamily: "var(--font-display)", fontSize: "2.7rem", fontWeight: 500, lineHeight: 1, color: C.ink, letterSpacing: "-0.02em" }}>{value}</p>
+        <p style={{ fontSize: "14px", fontWeight: 700, color: C.ink, marginTop: "10px" }}>{label}</p>
+        <p style={{ fontSize: "12.5px", color: C.muted, marginTop: "3px", lineHeight: 1.4 }}>{hint}</p>
       </div>
 
       {progress != null && (
@@ -209,10 +211,10 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
             </div>
 
             {/* Actividad */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "20px 22px", marginBottom: "16px" }}>
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "20px 22px", marginBottom: "16px", boxShadow: C.shadow }}>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "18px" }}>
-                <p style={{ fontSize: "13px", fontWeight: 600 }}>Actividad</p>
-                <p style={{ fontSize: "11px", color: C.muted }}>Últimos 14 días</p>
+                <p style={{ fontSize: "14px", fontWeight: 700 }}>Actividad</p>
+                <p style={{ fontSize: "11px", fontWeight: 500, color: C.muted }}>Últimos 14 días</p>
               </div>
               <div style={{ display: "flex", alignItems: "flex-end", gap: "6px", height: "70px" }}>
                 {actividad.map(({ d, n }, i) => (
@@ -236,9 +238,9 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
             </div>
 
             {/* Tabla de leads */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", overflow: "hidden" }}>
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", overflow: "hidden", boxShadow: C.shadow }}>
               <div style={{ padding: "18px 22px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-                <p style={{ fontSize: "14px", fontWeight: 600 }}>Leads recientes</p>
+                <p style={{ fontSize: "15px", fontWeight: 700 }}>Leads recientes</p>
                 <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                   {(["todos", "pendiente", "pagado", "cancelado"] as const).map(f => {
                     const active = filtro === f
@@ -330,7 +332,7 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
         {/* ── TAB PRECIOS ── */}
         {tab === "precios" && (
           <div style={{ maxWidth: "720px" }}>
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", overflow: "hidden" }}>
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", overflow: "hidden", boxShadow: C.shadow }}>
 
               {/* Cabecera */}
               <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "14px" }}>
