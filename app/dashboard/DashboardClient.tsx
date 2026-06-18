@@ -451,8 +451,9 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
           }
           .dash-brand { display: none; }
           .dash-nav { flex-direction: row; flex: 1; }
-          .dash-account { margin-top: 0; padding-top: 0; border-top: none; }
-          .dash-account > div:first-child { display: none; }
+          .dash-account { margin-top: 0; padding-top: 0; border-top: none; display: flex; align-items: center; flex-shrink: 0; }
+          .dash-account > div:first-child { display: none !important; }
+          .dash-account > a { padding: 8px 14px !important; white-space: nowrap; }
           .dash-content { margin-left: 0; }
         }
       `}</style>
