@@ -170,3 +170,53 @@ begin
       check (revestimiento in ('estandar', 'premium'));
   end if;
 end $$;
+
+-- ─── Modelos de la galería — fotos editables desde el dashboard ────────────────
+-- El dueño sube la foto de cada modelo desde el panel (pestaña "Productos").
+-- Correr este bloque completo en el SQL Editor de Supabase.
+
+create table if not exists modelos (
+  id          uuid primary key default gen_random_uuid(),
+  slug        text unique not null,
+  titulo      text not null,
+  tag         text not null,
+  tipo        text not null check (tipo in ('corredera_simple', 'plegable_doble')),
+  premium     boolean not null default false,
+  imagen_url  text,                          -- null → la web usa la foto de respaldo
+  alt         text not null default '',
+  orden       integer not null default 0,    -- orden en que aparecen en la galería
+  activo      boolean default true,
+  updated_at  timestamptz default now()
+);
+
+alter table modelos enable row level security;
+
+-- Todos pueden ver los modelos activos (la landing los lee)
+create policy "modelos_public_select" on modelos
+  for select using (activo = true);
+
+-- Solo admin puede crear / modificar
+create policy "modelos_admin_insert" on modelos
+  for insert with check (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+create policy "modelos_admin_update" on modelos
+  for update using (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+
+-- Datos iniciales: los 6 modelos actuales con sus fotos de respaldo
+insert into modelos (slug, titulo, tag, tipo, premium, imagen_url, alt, orden) values
+  ('granero-estandar',  'Estilo granero',         'Corrediza simple · Living',          'corredera_simple', false, '/puerta-granero.webp',  'Puerta estilo granero',             1),
+  ('granero-premium',   'Estilo granero Premium', 'Aluminio anti-humedad · Living',     'corredera_simple', true,  '/puerta-granero.webp',  'Puerta estilo granero premium',     2),
+  ('blanca-estandar',   'Lisa blanca',            'Corrediza simple · Dormitorio',      'corredera_simple', false, '/puerta-blanca.webp',   'Puerta corrediza blanca',           3),
+  ('blanca-premium',    'Lisa blanca Premium',    'Aluminio anti-humedad · Baño',       'corredera_simple', true,  '/puerta-blanca.webp',   'Puerta corrediza blanca premium',   4),
+  ('plegable-estandar', 'Plegable doble',         'Plegable doble · Ambientes amplios', 'plegable_doble',   false, '/puerta-producto.webp', 'Modelo de puerta plegable',         5),
+  ('plegable-premium',  'Plegable doble Premium', 'Aluminio anti-humedad · Amplios',    'plegable_doble',   true,  '/puerta-producto.webp', 'Modelo de puerta plegable premium', 6)
+on conflict (slug) do nothing;
+
+-- ─── Storage: bucket público para las fotos de productos ──────────────────────
+-- La subida pasa por el servidor con service_role (salta RLS); el bucket público
+-- permite que la web muestre las imágenes sin autenticación.
+insert into storage.buckets (id, name, public) values ('productos', 'productos', true)
+on conflict (id) do nothing;

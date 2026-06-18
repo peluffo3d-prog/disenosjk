@@ -33,6 +33,20 @@ export interface PrecioDB {
   updated_at: string
 }
 
+export interface Modelo {
+  id: string
+  slug: string
+  titulo: string
+  tag: string
+  tipo: "corredera_simple" | "plegable_doble"
+  premium: boolean
+  imagen_url: string | null   // null → usa la foto de respaldo estática
+  alt: string
+  orden: number
+  activo: boolean
+  updated_at: string
+}
+
 export interface Lead {
   id: string
   created_at: string

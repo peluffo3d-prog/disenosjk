@@ -1,11 +1,12 @@
 "use client"
-import { useState } from "react"
-import type { Lead, PrecioDB } from "@/types"
+import { useState, useRef } from "react"
+import type { Lead, PrecioDB, Modelo } from "@/types"
 import { fmtARS } from "@/lib/precios"
 
 interface Props {
   leads: Lead[]
   precios: PrecioDB[]
+  modelos: Modelo[]
   stats: {
     leadsMes: number
     ventasMes: number
@@ -14,7 +15,7 @@ interface Props {
   }
 }
 
-type Tab = "leads" | "precios"
+type Tab = "leads" | "precios" | "productos"
 
 const TIPO_LABEL: Record<string, string> = {
   corredera_simple: "Corrediza simple",
@@ -82,6 +83,11 @@ const IcoTag = ({ size = 17 }: IconProps) => (
     <path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><circle cx="7" cy="7" r="1.1" fill="currentColor" stroke="none" />
   </svg>
 )
+const IcoImage = ({ size = 17 }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.5-3.5a2 2 0 0 0-2.8 0L6 21" />
+  </svg>
+)
 
 // ─── Tarjeta KPI ──────────────────────────────────────────────────────────────
 function KPI({ icon, value, label, hint, accent = C.ink, progress }: {
@@ -121,7 +127,7 @@ function KPI({ icon, value, label, hint, accent = C.ink, progress }: {
   )
 }
 
-export default function DashboardClient({ leads, precios: preciosIniciales, stats }: Props) {
+export default function DashboardClient({ leads, precios: preciosIniciales, modelos: modelosIniciales, stats }: Props) {
   const [tab, setTab]       = useState<Tab>("leads")
   const [filtro, setFiltro] = useState<Lead["status"] | "todos">("todos")
 
@@ -129,6 +135,34 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
   const [precios, setPrecios]     = useState<PrecioDB[]>(preciosIniciales)
   const [guardando, setGuardando] = useState(false)
   const [feedback, setFeedback]   = useState<"ok" | "error" | null>(null)
+
+  // ── Editor de fotos de productos ──
+  const [modelos, setModelos]   = useState<Modelo[]>(modelosIniciales)
+  const [subiendo, setSubiendo] = useState<string | null>(null)   // id del modelo que se está subiendo
+  const [fotoMsg, setFotoMsg]   = useState<{ id: string; kind: "ok" | "error"; text?: string } | null>(null)
+  const fileInputs = useRef<Record<string, HTMLInputElement | null>>({})
+
+  async function handleUploadFoto(id: string, file: File) {
+    setSubiendo(id); setFotoMsg(null)
+    const form = new FormData()
+    form.append("id", id)
+    form.append("file", file)
+    try {
+      const res  = await fetch("/api/modelos/upload", { method: "POST", body: form })
+      const json = await res.json()
+      if (res.ok && json.imagen_url) {
+        setModelos(prev => prev.map(m => m.id === id ? { ...m, imagen_url: json.imagen_url } : m))
+        setFotoMsg({ id, kind: "ok" })
+      } else {
+        setFotoMsg({ id, kind: "error", text: json.error })
+      }
+    } catch {
+      setFotoMsg({ id, kind: "error", text: "No se pudo subir. Probá de nuevo." })
+    } finally {
+      setSubiendo(null)
+      setTimeout(() => setFotoMsg(null), 4000)
+    }
+  }
 
   function updatePrecio(id: string, valor: number) {
     setPrecios(prev => prev.map(p => p.id === id ? { ...p, precio: valor } : p))
@@ -176,7 +210,7 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
         </div>
 
         <nav className="dash-nav">
-          {([["leads", "Resumen y leads", <IcoHome key="h" />], ["precios", "Precios", <IcoTag key="t" />]] as [Tab, string, React.ReactNode][]).map(([id, label, icon]) => {
+          {([["leads", "Resumen y leads", <IcoHome key="h" />], ["precios", "Precios", <IcoTag key="t" />], ["productos", "Productos", <IcoImage key="i" />]] as [Tab, string, React.ReactNode][]).map(([id, label, icon]) => {
             const active = tab === id
             return (
               <button key={id} onClick={() => setTab(id)}
@@ -218,8 +252,8 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
       <div className="dash-content">
         <header className="dash-topbar">
           <div>
-            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "1.7rem", fontWeight: 500, lineHeight: 1 }}>{tab === "leads" ? "Resumen y leads" : "Precios"}</h1>
-            <p style={{ fontSize: "12.5px", color: C.muted, marginTop: "4px", textTransform: tab === "leads" ? "none" : "none" }}>{tab === "leads" ? `Tu negocio en ${MES}` : "Configurá los precios de venta"}</p>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "1.7rem", fontWeight: 500, lineHeight: 1 }}>{tab === "leads" ? "Resumen y leads" : tab === "precios" ? "Precios" : "Productos"}</h1>
+            <p style={{ fontSize: "12.5px", color: C.muted, marginTop: "4px" }}>{tab === "leads" ? `Tu negocio en ${MES}` : tab === "precios" ? "Configurá los precios de venta" : "Cambiá las fotos de tus modelos"}</p>
           </div>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "6px 12px", borderRadius: "100px", background: "rgba(10,143,79,0.1)", border: "1px solid rgba(10,143,79,0.2)" }}>
             <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: C.green, animation: "pulse 2s infinite" }} />
@@ -419,6 +453,62 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
                 <p style={{ fontSize: "11px", color: C.faint, marginTop: "16px", lineHeight: 1.5 }}>
                   Valores en pesos argentinos, sin decimales. Las cuotas se calculan solas: precio ÷ 6.
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB PRODUCTOS ── */}
+        {tab === "productos" && (
+          <div style={{ maxWidth: "920px" }}>
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", overflow: "hidden", boxShadow: C.shadow }}>
+              <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}` }}>
+                <p style={{ fontSize: "15px", fontWeight: 600 }}>Fotos de tus modelos</p>
+                <p style={{ fontSize: "12px", color: C.muted, marginTop: "3px" }}>
+                  Tocá &ldquo;Cambiar foto&rdquo; y elegí una imagen de tu computadora. Se actualiza en la web al instante. JPG, PNG o WEBP, hasta 6 MB.
+                </p>
+              </div>
+
+              <div style={{ padding: "20px 24px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "18px" }}>
+                {modelos.map(m => {
+                  const cargando = subiendo === m.id
+                  const msg = fotoMsg?.id === m.id ? fotoMsg : null
+                  const preview = m.imagen_url || "/puerta-producto.webp"
+                  return (
+                    <div key={m.id} style={{ border: `1px solid ${C.border}`, borderRadius: "10px", overflow: "hidden", background: "#faf9f6", display: "flex", flexDirection: "column" }}>
+                      <div style={{ position: "relative", aspectRatio: "4/3", background: "#eceae4" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={preview} alt={m.alt} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", opacity: cargando ? 0.5 : 1, transition: "opacity 0.2s" }} />
+                        {m.premium && (
+                          <span style={{ position: "absolute", top: "10px", left: "10px", fontFamily: "var(--font-mono)", fontSize: "9px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: C.ink, background: "#c9ccd1", padding: "4px 9px", borderRadius: "100px" }}>Premium</span>
+                        )}
+                        {cargando && (
+                          <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 600, color: C.ink }}>Subiendo…</span>
+                        )}
+                      </div>
+                      <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
+                        <div>
+                          <p style={{ fontSize: "13.5px", fontWeight: 600, lineHeight: 1.2 }}>{m.titulo}</p>
+                          <p style={{ fontSize: "11px", color: C.faint, marginTop: "2px" }}>{m.tag}</p>
+                        </div>
+                        <input
+                          ref={el => { fileInputs.current[m.id] = el }}
+                          type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+                          onChange={e => { const f = e.target.files?.[0]; if (f) handleUploadFoto(m.id, f); e.target.value = "" }}
+                        />
+                        <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                          <button
+                            onClick={() => fileInputs.current[m.id]?.click()} disabled={cargando}
+                            style={{ fontSize: "12.5px", fontWeight: 600, padding: "8px 14px", borderRadius: "8px", border: `1px solid ${C.ink}`, background: cargando ? "#e7e4dd" : C.ink, color: cargando ? C.muted : "#fff", cursor: cargando ? "not-allowed" : "pointer", transition: "opacity 0.15s" }}>
+                            {cargando ? "Subiendo…" : "Cambiar foto"}
+                          </button>
+                          {msg?.kind === "ok"    && <span style={{ fontSize: "11.5px", fontWeight: 600, color: C.green }}>Listo ✓</span>}
+                          {msg?.kind === "error" && <span style={{ fontSize: "11px", fontWeight: 600, color: C.red }} title={msg.text}>Error</span>}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>

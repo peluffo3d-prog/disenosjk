@@ -144,10 +144,12 @@ export const STATIC_PRECIO_ROWS: PrecioDB[] = [
 
 export function getPrecioDesdeRows(
   tipo: "corredera_simple" | "plegable_doble",
-  rows: PrecioDB[]
+  rows: PrecioDB[],
+  revestimiento: ConfiguradorState["revestimiento"] = "estandar"
 ): number {
   const tipoRows = rows.filter(r => r.tipo === tipo && r.activo).sort((a, b) => a.ancho_max - b.ancho_max)
-  return tipoRows[0]?.precio ?? 0
+  const base = tipoRows[0]?.precio ?? 0
+  return aplicarRevestimiento(base, revestimiento)
 }
 
 export function calcularPrecioConRows(config: ConfiguradorState, rows: PrecioDB[]): PrecioResult {

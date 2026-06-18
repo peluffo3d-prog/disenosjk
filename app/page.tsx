@@ -8,7 +8,18 @@ import Curtain from "@/components/Curtain"
 import SplitLines from "@/components/SplitLines"
 import ScaleImage from "@/components/ScaleImage"
 import SectionReveal from "@/components/SectionReveal"
-import { getPrecioDesde, fmtCuota, fmtARS } from "@/lib/precios"
+import { getPrecioDesde, getPrecioDesdeRows, fmtCuota, fmtARS } from "@/lib/precios"
+import { STATIC_MODELOS } from "@/lib/modelos"
+import type { Modelo, PrecioDB } from "@/types"
+
+// Forma que consume ProductCard. Las fotos por defecto son las estáticas de /public;
+// si la DB devuelve modelos con foto cargada, se reemplazan en runtime.
+type CardModelo = { key: string; img: string; alt: string; title: string; tag: string; tipo: "corredera_simple" | "plegable_doble"; premium: boolean }
+
+const FALLBACK_MODELOS: CardModelo[] = STATIC_MODELOS.map(m => ({
+  key: m.slug, img: m.imagen_url ?? "/puerta-producto.webp", alt: m.alt,
+  title: m.titulo, tag: m.tag, tipo: m.tipo, premium: m.premium,
+}))
 
 const DoorIntro = dynamic(() => import("@/components/DoorIntro"), { ssr: false })
 
@@ -35,12 +46,16 @@ function DarkRule({ my = 56 }: { my?: number }) {
 }
 
 // ─── Card de modelo — igual tamaño, estilo MercadoLibre ──────────────────────
-function ProductCard({ img, alt, title, tag, tipo, premium = false }: {
+function ProductCard({ img, alt, title, tag, tipo, premium = false, precios = [] }: {
   img: string; alt: string; title: string; tag: string
   tipo: "corredera_simple" | "plegable_doble"
   premium?: boolean
+  precios?: PrecioDB[]
 }) {
-  const desde = getPrecioDesde(tipo, premium ? "premium" : "estandar")
+  // Si ya llegaron los precios del panel, usar esos (dinámicos). Si no, el
+  // valor estático como respaldo — así nunca se ve "$0" mientras carga.
+  const rev = premium ? "premium" : "estandar"
+  const desde = precios.length ? getPrecioDesdeRows(tipo, precios, rev) : getPrecioDesde(tipo, rev)
   return (
     <a href="#configurador" style={{
       display: "flex", flexDirection: "column", height: "100%",
@@ -93,8 +108,37 @@ function ProductCard({ img, alt, title, tag, tipo, premium = false }: {
 export default function Home() {
   const [waVisible, setWaVisible] = useState(false)
   const [menuOpen, setMenuOpen]   = useState(false)
+  const [modelos, setModelos]     = useState<CardModelo[]>(FALLBACK_MODELOS)
+  const [precios, setPrecios]     = useState<PrecioDB[]>([])
   const heroRef   = useRef<HTMLElement>(null)
   const sliderRef = useRef<HTMLDivElement>(null)
+
+  // Traer las fotos cargadas por el dueño desde el panel. Si falla o está vacío,
+  // quedan las fotos de respaldo (FALLBACK_MODELOS) — la galería nunca se rompe.
+  useEffect(() => {
+    fetch("/api/modelos")
+      .then(r => (r.ok ? r.json() : null))
+      .then((rows: Modelo[] | null) => {
+        if (Array.isArray(rows) && rows.length > 0) {
+          setModelos(rows.map(m => ({
+            key: m.slug, img: m.imagen_url ?? "/puerta-producto.webp", alt: m.alt,
+            title: m.titulo, tag: m.tag, tipo: m.tipo, premium: m.premium,
+          })))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  // Traer los precios que el dueño edita en el panel, para que la galería muestre
+  // los mismos valores que el configurador. Si falla, las tarjetas usan el respaldo.
+  useEffect(() => {
+    fetch("/api/precios")
+      .then(r => (r.ok ? r.json() : null))
+      .then((rows: PrecioDB[] | null) => {
+        if (Array.isArray(rows) && rows.length > 0) setPrecios(rows)
+      })
+      .catch(() => {})
+  }, [])
 
   const scrollSlider = (dir: 1 | -1) => {
     const el = sliderRef.current
@@ -416,16 +460,9 @@ export default function Home() {
 
             <Curtain>
               <div className="product-slider" ref={sliderRef}>
-                {[
-                  { img: "/puerta-granero.webp",  alt: "Puerta estilo granero",            title: "Estilo granero",           tag: "Corrediza simple · Living",          tipo: "corredera_simple" as const, premium: false },
-                  { img: "/puerta-granero.webp",  alt: "Puerta estilo granero premium",    title: "Estilo granero Premium",   tag: "Aluminio anti-humedad · Living",     tipo: "corredera_simple" as const, premium: true  },
-                  { img: "/puerta-blanca.webp",   alt: "Puerta corrediza blanca",          title: "Lisa blanca",              tag: "Corrediza simple · Dormitorio",      tipo: "corredera_simple" as const, premium: false },
-                  { img: "/puerta-blanca.webp",   alt: "Puerta corrediza blanca premium",  title: "Lisa blanca Premium",      tag: "Aluminio anti-humedad · Baño",       tipo: "corredera_simple" as const, premium: true  },
-                  { img: "/puerta-producto.webp", alt: "Modelo de puerta plegable",        title: "Plegable doble",           tag: "Plegable doble · Ambientes amplios", tipo: "plegable_doble"   as const, premium: false },
-                  { img: "/puerta-producto.webp", alt: "Modelo de puerta plegable premium",title: "Plegable doble Premium",   tag: "Aluminio anti-humedad · Amplios",    tipo: "plegable_doble"   as const, premium: true  },
-                ].map(p => (
-                  <div key={p.title} className="product-slider-item">
-                    <ProductCard {...p} />
+                {modelos.map(({ key, ...p }) => (
+                  <div key={key} className="product-slider-item">
+                    <ProductCard {...p} precios={precios} />
                   </div>
                 ))}
               </div>
