@@ -21,7 +21,8 @@ const TIPO_LABEL: Record<string, string> = {
   plegable_doble:   "Plegable doble",
 }
 
-const MES = new Date().toLocaleDateString("es-AR", { month: "long", year: "numeric" })
+const MES_RAW = new Date().toLocaleDateString("es-AR", { month: "long", year: "numeric" })
+const MES = MES_RAW.charAt(0).toUpperCase() + MES_RAW.slice(1) // "Junio de 2026"
 
 // ─── Paleta ───────────────────────────────────────────────────────────────────
 const C = {
@@ -164,7 +165,7 @@ export default function DashboardClient({ leads, precios: preciosIniciales, stat
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <div>
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: "1.5rem", fontWeight: 500, lineHeight: 1 }}>Diseños JK</h1>
-            <p style={{ fontSize: "12px", color: C.muted, marginTop: "3px", textTransform: "capitalize" }}>Panel de control · {MES}</p>
+            <p style={{ fontSize: "12px", color: C.muted, marginTop: "3px" }}>Panel de control · {MES}</p>
           </div>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "100px", background: "rgba(10,143,79,0.1)" }}>
             <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: C.green, boxShadow: `0 0 0 0 ${C.green}`, animation: "pulse 2s infinite" }} />
