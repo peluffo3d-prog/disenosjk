@@ -146,12 +146,10 @@ create policy "precios_admin_update" on precios
   );
 
 -- Datos iniciales (ejecutar DESPUÉS de crear la tabla)
+-- Precio plano por tipo, alineado al catálogo real de MercadoLibre.
 insert into precios (tipo, ancho_max, alto, precio) values
-  ('corredera_simple', 90,  220, 150000),
-  ('corredera_simple', 120, 220, 185000),
-  ('corredera_simple', 150, 220, 220000),
-  ('plegable_doble',   150, 220, 280000),
-  ('plegable_doble',   200, 220, 340000)
+  ('corredera_simple', 150, 220, 129999),
+  ('plegable_doble',   200, 220, 154999)
 on conflict do nothing;
 
 -- ─── Migración: revestimiento premium (aluminio anti-humedad) ──────────────────
@@ -205,14 +203,17 @@ create policy "modelos_admin_update" on modelos
     exists (select 1 from profiles where id = auth.uid() and role = 'admin')
   );
 
--- Datos iniciales: los 6 modelos actuales con sus fotos de respaldo
+-- Datos iniciales: catálogo real de Diseños JK en MercadoLibre, con fotos de respaldo.
+-- Solo el modelo de aluminio anti-humedad es premium (+30%); el resto es estándar.
 insert into modelos (slug, titulo, tag, tipo, premium, imagen_url, alt, orden) values
-  ('granero-estandar',  'Estilo granero',         'Corrediza simple · Living',          'corredera_simple', false, '/puerta-granero.webp',  'Puerta estilo granero',             1),
-  ('granero-premium',   'Estilo granero Premium', 'Aluminio anti-humedad · Living',     'corredera_simple', true,  '/puerta-granero.webp',  'Puerta estilo granero premium',     2),
-  ('blanca-estandar',   'Lisa blanca',            'Corrediza simple · Dormitorio',      'corredera_simple', false, '/puerta-blanca.webp',   'Puerta corrediza blanca',           3),
-  ('blanca-premium',    'Lisa blanca Premium',    'Aluminio anti-humedad · Baño',       'corredera_simple', true,  '/puerta-blanca.webp',   'Puerta corrediza blanca premium',   4),
-  ('plegable-estandar', 'Plegable doble',         'Plegable doble · Ambientes amplios', 'plegable_doble',   false, '/puerta-producto.webp', 'Modelo de puerta plegable',         5),
-  ('plegable-premium',  'Plegable doble Premium', 'Aluminio anti-humedad · Amplios',    'plegable_doble',   true,  '/puerta-producto.webp', 'Modelo de puerta plegable premium', 6)
+  ('corrediza-mas-vendida', 'Corrediza colgante',     'Más vendida · Baño, cocina, living',          'corredera_simple', false, '/puerta-blanca.webp',   'Puerta corrediza colgante blanca',       1),
+  ('corrediza-a-color',     'Corrediza a color',      '8 colores · Baño, cocina, living',            'corredera_simple', false, '/puerta-blanca.webp',   'Puerta corrediza colgante a color',      2),
+  ('corrediza-madera',      'Corrediza símil madera', 'Madera · 9 colores · Living',                 'corredera_simple', false, '/puerta-granero.webp',  'Puerta corrediza símil madera',          3),
+  ('corrediza-cedro',       'Corrediza símil cedro',  'Cedro · 7 colores · Dormitorio',              'corredera_simple', false, '/puerta-granero.webp',  'Puerta corrediza símil cedro',           4),
+  ('corrediza-60x210',      'Corrediza 60×210',       'Medida fija · Espacios chicos',               'corredera_simple', false, '/puerta-blanca.webp',   'Puerta corrediza 60x210',                5),
+  ('corrediza-a-medida',    'Corrediza a medida',     'Apta Durlock · Incluye kit',                  'corredera_simple', false, '/puerta-blanca.webp',   'Puerta corrediza a medida con kit',      6),
+  ('corrediza-aluminio',    'Premium aluminio 2.0',   'Aluminio anti-humedad · Rodamiento 2.0',      'corredera_simple', true,  '/puerta-blanca.webp',   'Puerta corrediza premium aluminio',      7),
+  ('plegable-a-medida',     'Plegable a medida',      'Apta Durlock · Baño y cocina',                'plegable_doble',   false, '/puerta-producto.webp', 'Puerta plegable a medida',               8)
 on conflict (slug) do nothing;
 
 -- ─── Storage: bucket público para las fotos de productos ──────────────────────

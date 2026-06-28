@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import type { ConfiguradorState, Ambiente, TipoPuerta, Material, Revestimiento, PrecioDB } from "@/types"
-import { calcularPrecioConRows, fmtARS, STATIC_PRECIO_ROWS } from "@/lib/precios"
+import { calcularPrecioConRows, STATIC_PRECIO_ROWS } from "@/lib/precios"
 
 const WA = "5491100000000"
 const EAZE = [0.76, 0, 0.24, 1] as [number, number, number, number]
@@ -80,7 +80,7 @@ const REVESTIMIENTOS: { value: Revestimiento; label: string; desc: string; extra
 function DoorPreview({ cfg }: { cfg: ConfiguradorState }) {
   const w = cfg.ancho || 80
   const h = cfg.alto || 200
-  const ratio = Math.min(Math.max(w / h, 0.25), 1.4) // ancho/alto, clamp para que no se deforme
+  const ratio = Math.min(Math.max(w / h, 0.25), 1.4)
   const mat = MATERIALES.find(m => m.value === cfg.material)
   const swatch = mat?.swatch ?? "#3a3a3a"
   const filled = !!cfg.material
@@ -88,23 +88,19 @@ function DoorPreview({ cfg }: { cfg: ConfiguradorState }) {
 
   return (
     <div style={{ height: "200px", display: "flex", alignItems: "flex-end", justifyContent: "center", marginBottom: "24px" }}>
-      {/* Riel */}
       <div style={{ position: "relative", height: "100%", display: "flex", alignItems: "flex-end" }}>
         <div style={{ position: "absolute", top: "6px", left: "-10%", right: "-10%", height: "2px", background: "rgba(255,255,255,0.25)" }} />
-        {/* Hoja */}
         <div style={{
           height: "92%", aspectRatio: String(ratio),
           background: filled ? swatch : "rgba(255,255,255,0.06)",
           border: filled && premium
-            ? "2px solid #c9ccd1" // marco de aluminio premium
+            ? "2px solid #c9ccd1"
             : filled ? (cfg.material === "negro" ? "1px solid rgba(255,255,255,0.18)" : "none") : "1px dashed rgba(255,255,255,0.2)",
           borderRadius: "2px", position: "relative",
           transition: "aspect-ratio 0.4s cubic-bezier(0.76,0,0.24,1), background 0.3s, border-color 0.3s",
           boxShadow: filled ? "0 8px 30px rgba(0,0,0,0.35)" : "none",
         }}>
-          {/* Manija */}
           {filled && <div style={{ position: "absolute", top: "44%", right: cfg.tipo === "plegable_doble" ? "48%" : "10%", width: "3px", height: "26px", background: "rgba(0,0,0,0.35)", borderRadius: "2px" }} />}
-          {/* Línea de plegado si es doble */}
           {filled && cfg.tipo === "plegable_doble" && <div style={{ position: "absolute", top: 0, bottom: 0, left: "50%", width: "1px", background: "rgba(0,0,0,0.2)" }} />}
         </div>
       </div>
@@ -114,10 +110,6 @@ function DoorPreview({ cfg }: { cfg: ConfiguradorState }) {
 
 export default function Configurador() {
   const [cfg, setCfg]           = useState<ConfiguradorState>(INITIAL)
-  const [nombre, setNombre]     = useState("")
-  const [email, setEmail]       = useState("")
-  const [tel, setTel]           = useState("")
-  const [loading, setLoading]   = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [precioRows, setPrecioRows] = useState<PrecioDB[]>(STATIC_PRECIO_ROWS)
 
@@ -128,7 +120,6 @@ export default function Configurador() {
     return () => window.removeEventListener("resize", check)
   }, [])
 
-  // Carga precios desde la DB al montar; si falla usa los estáticos como fallback
   useEffect(() => {
     fetch("/api/precios")
       .then(r => r.ok ? r.json() : null)
@@ -140,7 +131,6 @@ export default function Configurador() {
 
   const precio   = calcularPrecioConRows(cfg, precioRows)
   const completo = !!(cfg.ambiente && cfg.tipo && cfg.material && cfg.ancho && cfg.alto)
-  const listoPagar = completo && precio.estandar && !!nombre && !!email
 
   const matLabel = MATERIALES.find(m => m.value === cfg.material)?.label
 
@@ -157,19 +147,6 @@ export default function Configurador() {
     )}`
   }
 
-  async function handlePagar() {
-    if (!listoPagar || !precio.puerta) return
-    setLoading(true)
-    try {
-      const res  = await fetch("/api/mp/create-preference", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, email, telefono: tel, ...cfg, precio_puerta: precio.puerta, precio_instalacion: precio.instalacion }),
-      })
-      const data = await res.json()
-      if (data.init_point) window.location.href = data.init_point
-    } finally { setLoading(false) }
-  }
-
   // Filas de resumen en vivo
   const resumen: [string, string | null][] = [
     ["Ambiente", cfg.ambiente ? cfg.ambiente[0].toUpperCase() + cfg.ambiente.slice(1) : null],
@@ -180,11 +157,11 @@ export default function Configurador() {
   ]
 
   return (
-    <section style={{ padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)", background: "#f5f4f0", paddingBottom: isMobile && completo ? "140px" : undefined }}>
+    <section style={{ padding: "clamp(80px, 10vh, 120px) clamp(24px, 5vw, 56px)", background: "#f5f4f0", paddingBottom: isMobile && completo ? "100px" : undefined }}>
 
-      {/* Barra de precio fija en mobile */}
+      {/* Barra fija mobile — aparece al completar la config */}
       <AnimatePresence>
-        {isMobile && completo && precio.estandar && (
+        {isMobile && completo && (
           <motion.div
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -196,16 +173,17 @@ export default function Configurador() {
               borderTop: "1px solid rgba(255,255,255,0.1)",
               display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px",
             }}>
-            <div>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>Total</p>
-              <p style={{ fontFamily: "var(--font-display)", fontSize: "1.8rem", fontWeight: 200, letterSpacing: "-0.02em", color: "#f5f4f0", lineHeight: 1.1 }}>
-                {fmtARS(precio.total!)}
-              </p>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", color: "rgba(255,255,255,0.35)", marginTop: "2px" }}>6 cuotas sin interés</p>
-            </div>
-            <a href="#configurador-pago"
-              style={{ padding: "14px 20px", background: "#f5f4f0", color: "#0a0a0a", fontSize: "13px", fontWeight: 500, letterSpacing: "0.03em", textDecoration: "none", borderRadius: "3px", whiteSpace: "nowrap" }}>
-              Continuar →
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
+              Tu configuración<br/>está lista
+            </p>
+            <a href={waMsg()} target="_blank" rel="noopener noreferrer"
+              style={{
+                padding: "14px 22px", background: "#25D366", color: "#fff",
+                fontSize: "13px", fontWeight: 600, letterSpacing: "0.02em",
+                textDecoration: "none", borderRadius: "3px", whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}>
+              Contactar →
             </a>
           </motion.div>
         )}
@@ -216,7 +194,7 @@ export default function Configurador() {
         <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>Configurador</p>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 4.5rem)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.05 }}>Armá tu puerta.</h2>
         <p style={{ fontSize: "15px", color: "#666", marginTop: "16px", maxWidth: "440px", lineHeight: 1.7 }}>
-          Elegí cada detalle y el precio se calcula al instante. Sin esperas, sin ir y venir por WhatsApp.
+          Elegí cada detalle y te contactamos con el precio exacto en minutos. Sin esperas.
         </p>
       </div>
 
@@ -366,39 +344,31 @@ export default function Configurador() {
             )}
           </AnimatePresence>
 
-          {/* 06 Datos + pago — aparece al completar */}
+          {/* CTA mobile — aparece al completar (respaldo por si la barra fija no se muestra) */}
           <AnimatePresence>
-            {completo && precio.estandar && (
-              <motion.div id="configurador-pago" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.35 }} style={{ overflow: "hidden" }}>
+            {isMobile && completo && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.35 }} style={{ overflow: "hidden" }}>
                 <hr style={{ border: "none", borderTop: "1px solid rgba(0,0,0,0.08)", margin: "36px 0" }} />
-                <StepHead n="07" label="Tus datos" done={!!nombre && !!email} />
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
-                  <Input label="Nombre y apellido" type="text" placeholder="Juan Pérez" value={nombre} onChange={e => setNombre(e.target.value)} />
-                  <div className="contact-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    <Input label="Email" type="email" placeholder="correo@mail.com" value={email} onChange={e => setEmail(e.target.value)} />
-                    <Input label="WhatsApp" type="tel" placeholder="11 2345 6789" value={tel} onChange={e => setTel(e.target.value)} />
-                  </div>
-                </div>
-                {/* Precio + botón pago inline en mobile */}
-                {isMobile && (
-                  <div style={{ background: "#0a0a0a", borderRadius: "6px", padding: "24px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "4px" }}>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)" }}>Total</span>
-                      <span style={{ fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 200, letterSpacing: "-0.02em", color: "#f5f4f0" }}>{fmtARS(precio.total!)}</span>
-                    </div>
-                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "rgba(255,255,255,0.4)", marginBottom: "20px" }}>Hasta 6 cuotas sin interés</p>
-                    <button onClick={handlePagar} disabled={!listoPagar || loading}
-                      style={{ width: "100%", padding: "16px", background: "#f5f4f0", color: "#0a0a0a", border: "none", fontSize: "14px", fontWeight: 600, borderRadius: "4px", cursor: listoPagar ? "pointer" : "not-allowed", opacity: listoPagar ? 1 : 0.4 }}>
-                      {loading ? "Procesando…" : listoPagar ? "Pagar con Mercado Pago" : "Completá tus datos ↑"}
-                    </button>
-                  </div>
-                )}
+                <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.6, marginBottom: "16px" }}>
+                  {!precio.estandar
+                    ? (precio.mensaje ?? "Esta configuración necesita cotización personalizada.")
+                    : "Listo. Envianos los detalles y te confirmamos el precio en minutos."}
+                </p>
+                <a href={waMsg()} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: "block", textAlign: "center", width: "100%", padding: "16px",
+                    background: "#25D366", color: "#fff", border: "none",
+                    fontSize: "14px", fontWeight: 600, letterSpacing: "0.02em",
+                    textDecoration: "none", borderRadius: "4px",
+                  }}>
+                  Contactar por WhatsApp →
+                </a>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* ── Panel resumen sticky (oscuro) — solo desktop, no se monta en mobile ── */}
+        {/* ── Panel resumen sticky (oscuro) — solo desktop ── */}
         {!isMobile && <aside className="config-summary" style={{ position: "sticky", top: "80px", background: "#0a0a0a", borderRadius: "6px", padding: "clamp(24px, 3vw, 36px)", color: "#f5f4f0" }}>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "20px" }}>Tu puerta</p>
 
@@ -420,51 +390,31 @@ export default function Configurador() {
             )}
           </div>
 
-          {/* Precio en vivo */}
+          {/* CTA */}
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.15)", paddingTop: "20px" }}>
-            {completo && precio.estandar ? (
-              <>
-                {cfg.instalacion && precio.instalacion != null && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "rgba(255,255,255,0.55)", marginBottom: "6px" }}>
-                    <span>Puerta {fmtARS(precio.puerta!)}</span>
-                    <span>+ Instalación {fmtARS(precio.instalacion)}</span>
-                  </div>
-                )}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "4px" }}>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)" }}>Total</span>
-                  <span style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.2rem, 4vw, 3rem)", fontWeight: 200, letterSpacing: "-0.02em", color: "#f5f4f0" }}>{fmtARS(precio.total!)}</span>
-                </div>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "rgba(255,255,255,0.4)", letterSpacing: "0.04em", marginBottom: "20px" }}>Hasta 6 cuotas sin interés</p>
-
-                <button onClick={handlePagar} disabled={!listoPagar || loading}
-                  style={{
-                    width: "100%", padding: "15px", background: "#f5f4f0", color: "#0a0a0a", border: "none",
-                    fontSize: "13px", fontWeight: 600, letterSpacing: "0.03em", borderRadius: "4px",
-                    cursor: listoPagar && !loading ? "pointer" : "not-allowed",
-                    opacity: listoPagar ? 1 : 0.4, transition: "opacity 0.2s",
-                  }}
-                  onMouseEnter={e => { if (listoPagar && !loading) e.currentTarget.style.opacity = "0.85" }}
-                  onMouseLeave={e => { if (listoPagar && !loading) e.currentTarget.style.opacity = "1" }}>
-                  {loading ? "Procesando…" : listoPagar ? "Pagar con Mercado Pago" : "Completá tus datos ↓"}
-                </button>
-                <p style={{ textAlign: "center", marginTop: "14px", fontSize: "11px", color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
-                  ¿Guardar cotización? <a href="/login" style={{ color: "#f5f4f0", textDecoration: "underline", textUnderlineOffset: "3px" }}>Creá tu cuenta</a>
-                </p>
-              </>
-            ) : completo && !precio.estandar ? (
+            {completo ? (
               <>
                 <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)", lineHeight: 1.6, marginBottom: "18px" }}>
-                  {precio.mensaje ?? "Esta configuración necesita cotización personalizada."}
+                  {!precio.estandar
+                    ? (precio.mensaje ?? "Esta configuración necesita cotización personalizada.")
+                    : "Listo. Envianos los detalles y te confirmamos el precio en minutos."}
                 </p>
                 <a href={waMsg()} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "block", textAlign: "center", width: "100%", padding: "15px", background: "#f5f4f0", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, letterSpacing: "0.03em", textDecoration: "none", borderRadius: "4px" }}>
-                  Cotizar por WhatsApp →
+                  style={{
+                    display: "block", textAlign: "center", width: "100%", padding: "15px",
+                    background: "#25D366", color: "#fff", fontSize: "13px", fontWeight: 600,
+                    letterSpacing: "0.02em", textDecoration: "none", borderRadius: "4px",
+                    transition: "opacity 0.2s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = "0.88" }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = "1" }}>
+                  Contactar por WhatsApp →
                 </a>
               </>
             ) : (
               <div style={{ textAlign: "center", padding: "8px 0" }}>
-                <p style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", fontWeight: 300, color: "rgba(255,255,255,0.55)", marginBottom: "6px" }}>Precio al instante</p>
-                <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>Completá los pasos y el total aparece acá.</p>
+                <p style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", fontWeight: 300, color: "rgba(255,255,255,0.55)", marginBottom: "6px" }}>Configurá tu puerta</p>
+                <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>Completá los pasos y te contactamos al instante.</p>
               </div>
             )}
           </div>

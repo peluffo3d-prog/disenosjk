@@ -1,19 +1,18 @@
 import type { ConfiguradorState, PrecioResult, PrecioDB } from "@/types"
 
 // ─── TABLA DE PRECIOS (ARS) ───────────────────────────────────────────────────
-// TODO: reemplazar con precios reales cuando el cliente los confirme
+// Precio plano por tipo, alineado al catálogo real de MercadoLibre (Diseños JK).
+// La venta de ML es "a medida, incluye kit" a un precio único por tipo, así que
+// acá hay una sola fila por tipo válida hasta la medida máxima. Más ancho que el
+// máximo → estandar=false → WhatsApp.
 // Estructura: [anchoMaxCm, altoCm, precio]
-// Si el ancho supera el último rango → estandar=false → WhatsApp
 
 const PRECIOS_CORREDERA_SIMPLE: [number, number, number][] = [
-  [90,  220, 150_000],
-  [120, 220, 185_000],
-  [150, 220, 220_000],
+  [150, 220, 129_999],
 ]
 
 const PRECIOS_PLEGABLE_DOBLE: [number, number, number][] = [
-  [150, 220, 280_000],
-  [200, 220, 340_000],
+  [200, 220, 154_999],
 ]
 
 // Instalación: porcentaje sobre precio de puerta (solo CABA + GBA)
@@ -135,11 +134,8 @@ export function fmtCuota(precio: number, cuotas = 6): string {
 
 // Filas estáticas como fallback (mismos valores que las constantes hardcodeadas)
 export const STATIC_PRECIO_ROWS: PrecioDB[] = [
-  { id: "s1", tipo: "corredera_simple", ancho_max: 90,  alto: 220, precio: 150_000, activo: true, updated_at: "" },
-  { id: "s2", tipo: "corredera_simple", ancho_max: 120, alto: 220, precio: 185_000, activo: true, updated_at: "" },
-  { id: "s3", tipo: "corredera_simple", ancho_max: 150, alto: 220, precio: 220_000, activo: true, updated_at: "" },
-  { id: "s4", tipo: "plegable_doble",   ancho_max: 150, alto: 220, precio: 280_000, activo: true, updated_at: "" },
-  { id: "s5", tipo: "plegable_doble",   ancho_max: 200, alto: 220, precio: 340_000, activo: true, updated_at: "" },
+  { id: "s1", tipo: "corredera_simple", ancho_max: 150, alto: 220, precio: 129_999, activo: true, updated_at: "" },
+  { id: "s2", tipo: "plegable_doble",   ancho_max: 200, alto: 220, precio: 154_999, activo: true, updated_at: "" },
 ]
 
 export function getPrecioDesdeRows(
